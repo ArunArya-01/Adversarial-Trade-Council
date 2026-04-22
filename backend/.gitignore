@@ -1,43 +1,30 @@
-# ── TradeMind AI Backend — .gitignore ────────────────────────────────────────
-
-# Secrets — NEVER commit
+# ── Secrets ───────────────────────────────────────────────────────────────────
 .env
 
-# Python
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
-*$py.class
 *.so
-*.egg
 *.egg-info/
 dist/
 build/
-.eggs/
 
-# Virtual environments
+# ── Virtual environments ───────────────────────────────────────────────────────
 venv/
 .venv/
-env/
-ENV/
 
-# Model checkpoints & weights
-models/
-*.zip
-*.pkl
+# ── Database ──────────────────────────────────────────────────────────────────
+*.db
+*.sqlite3
 
-# Logs
-*.log
-logs/
-
-# IDE
+# ── IDE ───────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
-*.swp
 
-# macOS
+# ── macOS ─────────────────────────────────────────────────────────────────────
 .DS_Store
 
-# Test artefacts
+# ── Tests ─────────────────────────────────────────────────────────────────────
 .pytest_cache/
-htmlcov/
 .coverage
+htmlcov/
