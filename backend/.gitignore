@@ -1,0 +1,43 @@
+# ── TradeMind AI Backend — .gitignore ────────────────────────────────────────
+
+# Secrets — NEVER commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Model checkpoints & weights
+models/
+*.zip
+*.pkl
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# macOS
+.DS_Store
+
+# Test artefacts
+.pytest_cache/
+htmlcov/
+.coverage
