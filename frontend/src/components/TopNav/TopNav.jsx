@@ -8,8 +8,8 @@ export default function TopNav() {
   return (
     <header className="h-14 border-b border-border bg-surface flex items-center justify-between px-4 shrink-0 z-10">
       <div className="flex items-center gap-2 w-56">
-        <Hexagon className="text-neon-green glow-text-green" size={24} />
-        <span className="font-bold tracking-widest uppercase text-sm">TradeMind<span className="text-text-muted">_AI</span></span>
+        <Hexagon className="text-gold glow-text-gold" size={24} />
+        <span className="font-bold tracking-widest uppercase text-sm">TradeMind<span className="text-text-dim">_AI</span></span>
       </div>
 
       <TickerStrip />
@@ -25,9 +25,9 @@ export default function TopNav() {
         <div className="flex items-center gap-2 ml-4">
           <div className="relative flex h-2 w-2">
             {wsStatus === 'connected' && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-green opacity-75"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75"></span>
             )}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${wsStatus === 'connected' ? 'bg-neon-green' : wsStatus === 'connecting' ? 'bg-neon-gold' : 'bg-neon-red'}`}></span>
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${wsStatus === 'connected' ? 'bg-gold' : wsStatus === 'connecting' ? 'bg-gold-dim' : 'bg-neon-red'}`}></span>
           </div>
           <Activity size={16} />
         </div>

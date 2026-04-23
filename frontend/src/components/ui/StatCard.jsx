@@ -3,10 +3,10 @@ export default function StatCard({ title, value, delta, deltaLabel, icon: Icon }
   const isNegative = delta && delta < 0
 
   return (
-    <div className="bg-surface border border-border rounded-xl p-5 flex flex-col gap-2">
+    <div className="gold-card rounded-xl p-5 flex flex-col gap-2">
       <div className="flex items-center justify-between text-text-muted">
         <span className="text-sm font-medium">{title}</span>
-        {Icon && <Icon size={18} className="opacity-70" />}
+        {Icon && <Icon size={18} className="text-gold/50" />}
       </div>
       <div className="text-3xl font-bold text-text-primary tracking-tight">
         {value}

@@ -65,7 +65,15 @@ const useStore = create((set, get) => ({
 
   setNewsData: (data) => set((state) => ({
     news: { ...state.news, ...data }
-  }))
+  })),
+
+  // ── Scenario State (Lock & Key) ───────────────────────────
+  // When Academy sets a scenario, War Room reads it to load
+  // the appropriate historical context and challenge.
+  currentScenario: null,
+
+  setCurrentScenario: (scenario) => set({ currentScenario: scenario }),
+  clearScenario: () => set({ currentScenario: null }),
 }))
 
 export default useStore

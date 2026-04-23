@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 
-export default function ProgressBar({ progress, className = '', color = 'bg-neon-green glow-border-green' }) {
+export default function ProgressBar({ progress, className = '', color = 'bg-gold glow-border-gold' }) {
   const clamped = Math.max(0, Math.min(100, progress))
   
   return (

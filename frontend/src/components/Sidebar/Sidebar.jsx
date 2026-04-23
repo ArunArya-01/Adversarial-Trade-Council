@@ -11,7 +11,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-56 border-r border-border bg-surface flex flex-col shrink-0">
-      <div className="p-4 py-6 text-xs font-mono text-text-muted uppercase tracking-widest border-b border-border/50">
+      <div className="p-4 py-6 text-xs font-mono text-text-dim uppercase tracking-widest border-b border-border">
         Navigation
       </div>
       
@@ -21,10 +21,10 @@ export default function Sidebar() {
             key={item.path}
             to={item.path}
             className={({ isActive }) => 
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors duration-200
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200
                ${isActive 
-                 ? 'bg-void text-neon-green box-shadow-glow border border-neon-green/20 glow-text-green' 
-                 : 'text-text-muted hover:text-text-primary hover:bg-white/5'}`
+                 ? 'bg-gold-wash text-gold border border-gold/20 glow-border-gold shadow-gold-sm' 
+                 : 'text-text-muted hover:text-text-primary hover:bg-white/5 border border-transparent'}`
             }
           >
             <item.icon size={18} />
@@ -34,13 +34,13 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-border mt-auto">
-        <div className="flex items-center gap-3 p-3 bg-void rounded-xl border border-border/50">
+        <div className="flex items-center gap-3 p-3 bg-void rounded-xl border border-border">
           <div className="relative">
-            <ShieldAlert size={28} className="text-neon-cyan" />
+            <ShieldAlert size={28} className="text-gold" />
           </div>
           <div>
-            <div className="text-xs text-text-muted uppercase tracking-wider font-mono">TMR Stack</div>
-            <div className="text-sm font-semibold text-text-primary">ACTIVE</div>
+            <div className="text-xs text-text-dim uppercase tracking-wider font-mono">TMR Stack</div>
+            <div className="text-sm font-semibold text-gold glow-text-gold">ACTIVE</div>
           </div>
         </div>
       </div>
