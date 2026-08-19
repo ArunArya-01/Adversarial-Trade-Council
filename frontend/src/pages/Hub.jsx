@@ -52,7 +52,9 @@ export default function Hub() {
           <div className="absolute top-5 right-5 z-10 text-lg font-mono font-bold text-gold glow-text-gold">
             AAPL
           </div>
-          <CandleVisualizer isGreen={true} />
+          <div className="w-full h-48">
+            <CandleVisualizer isGreen={true} decorative={true} />
+          </div>
         </div>
       </div>
 

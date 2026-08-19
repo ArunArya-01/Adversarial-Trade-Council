@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Terminal, Crosshair } from 'lucide-react'
-import { createChart } from 'lightweight-charts'
+import { createChart, CandlestickSeries } from 'lightweight-charts'
 import useStore from '../store/useStore'
 import useWebSocket from '../hooks/useWebSocket'
 import useApi from '../hooks/useApi'
@@ -80,7 +80,7 @@ export default function WarRoom() {
       },
     })
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#22C55E',
       downColor: '#EF4444',
       borderUpColor: '#22C55E',
@@ -117,13 +117,18 @@ export default function WarRoom() {
   useEffect(() => {
     if (!candlestickSeriesRef.current || candles.length === 0) return
 
-    const formattedCandles = candles.map(c => ({
-      time: c.date ? c.date.split('T')[0] : c.time,
-      open: c.open,
-      high: c.high,
-      low: c.low,
-      close: c.close,
-    }))
+    const formattedCandles = candles
+      .map(c => ({
+        time: c.date ? c.date.split('T')[0] : c.time,
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+      }))
+      // Sort ascending by time — lightweight-charts v5 is strict about this
+      .sort((a, b) => (a.time > b.time ? 1 : a.time < b.time ? -1 : 0))
+      // Remove duplicate timestamps (keep last occurrence)
+      .filter((c, i, arr) => i === arr.length - 1 || c.time !== arr[i + 1].time)
 
     candlestickSeriesRef.current.setData(formattedCandles)
     chartRef.current?.timeScale().fitContent()

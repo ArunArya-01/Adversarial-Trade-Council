@@ -94,34 +94,44 @@ export default function Academy() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {lessons.map((lesson) => (
-          <div key={lesson.id} className="gold-card rounded-xl p-5 hover:border-gold/30 transition-all duration-300 flex flex-col h-full group cursor-pointer hover:shadow-gold-sm" onClick={() => {
-            // Fetch lesson detail
-            fetch('/api/lessons/' + lesson.id)
-              .then(r => r.json())
-              .then(data => {
-                setSelectedLesson(data)
-                setQuizAnswer(null)
-              })
-          }}>
-            <div className="flex justify-between items-start mb-4">
-              <span className="text-xs font-mono font-bold text-gold bg-gold-wash px-2 py-1 rounded border border-gold/20">Mod {lesson.module}</span>
-              <span className="text-xs font-mono text-text-muted border border-border px-2 py-1 rounded flex items-center gap-1">
-                {lesson.xp_reward} XP
-              </span>
+        {lessons.length === 0 ? (
+          // Loading skeleton
+          [1,2,3].map(i => (
+            <div key={i} className="gold-card rounded-xl p-5 animate-pulse h-40">
+              <div className="h-4 bg-border rounded w-1/3 mb-4"></div>
+              <div className="h-5 bg-border rounded w-3/4 mb-2"></div>
+              <div className="h-3 bg-border rounded w-1/2"></div>
             </div>
-            
-            <h3 className="text-lg font-bold mb-2 group-hover:text-gold transition-colors">{lesson.title}</h3>
-            <div className="flex gap-2 mb-4 flex-wrap">
-               {lesson.tags.map(tag => <span key={tag} className="text-[10px] uppercase font-mono text-text-dim border border-border px-1.5 py-0.5 rounded">#{tag}</span>)}
-            </div>
+          ))
+        ) : (
+          lessons.map((lesson) => (
+            <div key={lesson.id} className="gold-card rounded-xl p-5 hover:border-gold/40 transition-all duration-300 flex flex-col h-full group cursor-pointer hover:shadow-gold-sm" onClick={() => {
+              fetch('/api/lessons/' + lesson.id)
+                .then(r => r.json())
+                .then(data => {
+                  setSelectedLesson(data)
+                  setQuizAnswer(null)
+                })
+            }}>
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-xs font-mono font-bold text-gold bg-gold-wash px-2 py-1 rounded border border-gold/20">Mod {lesson.module}</span>
+                <span className="text-xs font-mono text-text-muted border border-border px-2 py-1 rounded flex items-center gap-1">
+                  {lesson.xp_reward} XP
+                </span>
+              </div>
+              
+              <h3 className="text-lg font-bold mb-2 group-hover:text-gold transition-colors">{lesson.title}</h3>
+              <div className="flex gap-2 mb-4 flex-wrap">
+                {(lesson.tags || []).map(tag => <span key={tag} className="text-[10px] uppercase font-mono text-text-dim border border-border px-1.5 py-0.5 rounded">#{tag}</span>)}
+              </div>
 
-            <div className="mt-auto pt-4 border-t border-border flex items-center justify-between text-sm font-medium text-text-muted">
-              <span className="flex items-center gap-1"><PlayCircle size={16}/> {lesson.duration_min} min</span>
-              <span className="text-gold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">Start <span className="text-lg leading-none">→</span></span>
+              <div className="mt-auto pt-4 border-t border-border flex items-center justify-between text-sm font-medium text-text-muted">
+                <span className="flex items-center gap-1"><PlayCircle size={16}/> {lesson.duration_min} min</span>
+                <span className="text-gold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">Start <span className="text-lg leading-none">→</span></span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* ── Lesson Modal ── */}

@@ -7,154 +7,74 @@
 /* ─── Base ─────────────────────────────────────────────────── */
 body {
   @apply bg-void text-text-primary font-sans antialiased;
+  background: linear-gradient(135deg, #0A0E1A 0%, #0F1629 100%);
 }
 
-/* ─── Scrollbar — Invisible Track, Gold Thumb ─────────────── */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #2A2A2A;
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #FFD700;
-}
-
-/* ─── CRT / Retro Terminal Scan-lines ─────────────────────── */
-.terminal-scanlines {
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    transparent 2px,
-    rgba(0, 0, 0, 0.25) 2px,
-    rgba(0, 0, 0, 0.25) 4px
-  );
-  pointer-events: none;
-}
-
-.terminal-scanlines::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 215, 0, 0.03) 0%,
-    transparent 8%,
-    transparent 92%,
-    rgba(255, 215, 0, 0.03) 100%
-  );
-  pointer-events: none;
-}
+/* ─── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1E2D4A; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
 
 /* ─── Text Glow Effects ───────────────────────────────────── */
-.glow-text-gold {
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.2);
-}
-.glow-text-green {
-  text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
-}
-.glow-text-red {
-  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-}
+.glow-text-gold  { text-shadow: 0 0 12px rgba(59,130,246,0.7), 0 0 30px rgba(59,130,246,0.25); }
+.glow-text-green { text-shadow: 0 0 10px rgba(16,185,129,0.6); }
+.glow-text-red   { text-shadow: 0 0 10px rgba(239,68,68,0.6); }
 
 /* ─── Border Glow Effects ─────────────────────────────────── */
-.glow-border-gold {
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2), inset 0 0 15px rgba(255, 215, 0, 0.03);
-}
-.glow-border-green {
-  box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
-}
-.glow-border-red {
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
-}
-.glow-border-cyan {
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
-}
+.glow-border-gold  { box-shadow: 0 0 16px rgba(59,130,246,0.25), inset 0 0 16px rgba(59,130,246,0.04); }
+.glow-border-green { box-shadow: 0 0 16px rgba(16,185,129,0.25); }
+.glow-border-red   { box-shadow: 0 0 16px rgba(239,68,68,0.25); }
+.glow-border-cyan  { box-shadow: 0 0 16px rgba(59,130,246,0.25); }
 
-/* ─── Gold Accent Utilities ───────────────────────────────── */
+/* ─── Divider ─────────────────────────────────────────────── */
 .gold-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent);
 }
 
+/* ─── Card ────────────────────────────────────────────────── */
 .gold-card {
-  background: #0A0A0A;
-  border: 1px solid #1C1C1C;
+  background: #0F1629;
+  border: 1px solid #1E2D4A;
   position: relative;
 }
 .gold-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
 }
 
-/* ─── Candlestick Chart Container ─────────────────────────── */
-.tv-chart-container {
-  width: 100%;
-  height: 100%;
-}
+/* ─── Chart Container ─────────────────────────────────────── */
+.tv-chart-container { width: 100%; height: 100%; }
 
-/* ─── CRT Monitor Effect (for AI Thought Log) ────────────── */
-.crt-overlay {
-  position: relative;
-  overflow: hidden;
-}
-
+/* ─── CRT Monitor Effect ──────────────────────────────────── */
+.crt-overlay { position: relative; overflow: hidden; }
 .crt-overlay::before {
   content: '';
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(255, 215, 0, 0.015) 2px,
-    rgba(255, 215, 0, 0.015) 4px
+    0deg, transparent, transparent 2px,
+    rgba(59,130,246,0.012) 2px, rgba(59,130,246,0.012) 4px
   );
-  pointer-events: none;
-  z-index: 5;
+  pointer-events: none; z-index: 5;
 }
-
 .crt-overlay::after {
   content: '';
-  position: absolute;
-  top: -100%;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255, 215, 0, 0.04) 50%,
-    transparent 100%
-  );
+  position: absolute; top: -100%; left: 0; right: 0; height: 50%;
+  background: linear-gradient(to bottom, transparent 0%, rgba(59,130,246,0.04) 50%, transparent 100%);
   animation: scanline 8s linear infinite;
-  pointer-events: none;
-  z-index: 6;
+  pointer-events: none; z-index: 6;
 }
 
 /* ─── Typewriter Cursor ───────────────────────────────────── */
 .typewriter-cursor::after {
-  content: '▋';
-  color: #FFD700;
+  content: '▋'; color: #3B82F6;
   animation: blink 1s step-end infinite;
 }
+@keyframes blink { 50% { opacity: 0; } }
 
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-/* ─── Selection Color ─────────────────────────────────────── */
-::selection {
-  background: rgba(255, 215, 0, 0.25);
-  color: #fff;
-}
+/* ─── Selection ───────────────────────────────────────────── */
+::selection { background: rgba(59,130,246,0.30); color: #fff; }

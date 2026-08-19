@@ -115,17 +115,23 @@ function CandleModel({ isGreen, showLabels = false }) {
   )
 }
 
-export default function CandleVisualizer({ isGreen = true, showLabels = false }) {
+export default function CandleVisualizer({ isGreen = true, showLabels = false, decorative = false }) {
   return (
     <div className="w-full h-full min-h-[200px]">
-      <Canvas camera={{ position: [0, 0, 7], fov: 45 }}>
+      <Canvas
+        camera={{ position: [0, 0, 7], fov: 45 }}
+        frameloop={decorative ? 'demand' : 'always'}
+        gl={decorative ? { powerPreference: 'low-power', antialias: false } : { antialias: true }}
+        dpr={decorative ? 1 : Math.min(window.devicePixelRatio, 2)}
+      >
         <ambientLight intensity={0.4} />
         <pointLight position={[10, 10, 10]} intensity={1.2} />
         <pointLight position={[-5, -5, 5]} intensity={0.4} color="#FFD700" />
         <CandleModel isGreen={isGreen} showLabels={showLabels} />
-        <OrbitControls 
-          enableZoom={showLabels} 
-          autoRotate={false}
+        <OrbitControls
+          enableZoom={showLabels}
+          autoRotate={decorative}
+          autoRotateSpeed={2}
           enablePan={false}
           minPolarAngle={Math.PI / 4}
           maxPolarAngle={Math.PI * 3 / 4}

@@ -40,6 +40,27 @@ const useStore = create((set, get) => ({
     market: { ...state.market, ...data }
   })),
 
+  // Replace the entire candle array — used when a fresh SNAPSHOT arrives (e.g. on reconnect).
+  // This prevents duplicate / out-of-order timestamps that crash lightweight-charts v5.
+  setCandles: (newCandles) => set((state) => {
+    const candles = Array.isArray(newCandles) ? newCandles : [newCandles]
+    const sorted = [...candles].sort((a, b) => {
+      const ta = a.date ? new Date(a.date).getTime() : (a.time ?? 0)
+      const tb = b.date ? new Date(b.date).getTime() : (b.time ?? 0)
+      return ta - tb
+    })
+    const latestPrice = sorted.length > 0 ? sorted[sorted.length - 1].close : state.market.currentPrice
+    return {
+      market: {
+        ...state.market,
+        candles: sorted.slice(-200),
+        previousPrice: state.market.currentPrice,
+        currentPrice: latestPrice,
+      }
+    }
+  }),
+
+  // Append a single live candle tick — used for streaming CANDLE events.
   addCandles: (newCandles) => set((state) => {
     const candles = Array.isArray(newCandles) ? newCandles : [newCandles];
     const latestPrice = candles.length > 0 ? candles[candles.length - 1].close : state.market.currentPrice;
