@@ -1,80 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Base ─────────────────────────────────────────────────── */
+/* ─── White, Red & Black Core ──────────────────────────────── */
 body {
   @apply bg-void text-text-primary font-sans antialiased;
-  background: linear-gradient(135deg, #0A0E1A 0%, #0F1629 100%);
+  background-color: #000000;
+  color: #FFFFFF;
 }
 
-/* ─── Scrollbar ─────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1E2D4A; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-
-/* ─── Text Glow Effects ───────────────────────────────────── */
-.glow-text-gold  { text-shadow: 0 0 12px rgba(59,130,246,0.7), 0 0 30px rgba(59,130,246,0.25); }
-.glow-text-green { text-shadow: 0 0 10px rgba(16,185,129,0.6); }
-.glow-text-red   { text-shadow: 0 0 10px rgba(239,68,68,0.6); }
-
-/* ─── Border Glow Effects ─────────────────────────────────── */
-.glow-border-gold  { box-shadow: 0 0 16px rgba(59,130,246,0.25), inset 0 0 16px rgba(59,130,246,0.04); }
-.glow-border-green { box-shadow: 0 0 16px rgba(16,185,129,0.25); }
-.glow-border-red   { box-shadow: 0 0 16px rgba(239,68,68,0.25); }
-.glow-border-cyan  { box-shadow: 0 0 16px rgba(59,130,246,0.25); }
-
-/* ─── Divider ─────────────────────────────────────────────── */
-.gold-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent);
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #EF4444;
 }
 
-/* ─── Card ────────────────────────────────────────────────── */
-.gold-card {
-  background: #0F1629;
-  border: 1px solid #1E2D4A;
+/* ─── High-Contrast Card System ────────────────────────────── */
+.card {
+  background-color: #0C0C0C;
+  border: 1px solid #222222;
   position: relative;
 }
-.gold-card::before {
+.card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.6), transparent);
 }
 
-/* ─── Chart Container ─────────────────────────────────────── */
-.tv-chart-container { width: 100%; height: 100%; }
+.glow-red   { text-shadow: 0 0 12px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.35); }
+.glow-white { text-shadow: 0 0 10px rgba(255, 255, 255, 0.7); }
+.glow-green { text-shadow: 0 0 10px rgba(16, 185, 129, 0.6); }
 
-/* ─── CRT Monitor Effect ──────────────────────────────────── */
-.crt-overlay { position: relative; overflow: hidden; }
-.crt-overlay::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 2px,
-    rgba(59,130,246,0.012) 2px, rgba(59,130,246,0.012) 4px
-  );
-  pointer-events: none; z-index: 5;
-}
-.crt-overlay::after {
-  content: '';
-  position: absolute; top: -100%; left: 0; right: 0; height: 50%;
-  background: linear-gradient(to bottom, transparent 0%, rgba(59,130,246,0.04) 50%, transparent 100%);
-  animation: scanline 8s linear infinite;
-  pointer-events: none; z-index: 6;
+.border-glow-red {
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.35), inset 0 0 16px rgba(239, 68, 68, 0.05);
 }
 
-/* ─── Typewriter Cursor ───────────────────────────────────── */
-.typewriter-cursor::after {
-  content: '▋'; color: #3B82F6;
-  animation: blink 1s step-end infinite;
+::selection {
+  background: #EF4444;
+  color: #FFFFFF;
 }
-@keyframes blink { 50% { opacity: 0; } }
-
-/* ─── Selection ───────────────────────────────────────────── */
-::selection { background: rgba(59,130,246,0.30); color: #fff; }

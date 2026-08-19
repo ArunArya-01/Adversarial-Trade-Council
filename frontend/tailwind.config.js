@@ -11,81 +11,67 @@ export default {
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       colors: {
-        // ── Professional Dark Blue & Green Palette ──
-        void:    '#0A0E1A',
-        surface: '#0F1629',
-        panel:   '#151D35',
-        border:  '#1E2D4A',
-        'border-light': '#243356',
+        // ── White, Red, and Black Palette ──
+        void:    '#000000',       // True Pitch Black
+        surface: '#0A0A0A',       // Deep Obsidian
+        panel:   '#121212',       // Dark Charcoal
+        border:  '#222222',       // Subtle Border
+        'border-light': '#333333',
+        'border-red': 'rgba(239, 68, 68, 0.35)',
 
-        // Primary accent: Electric Blue
+        // Primary Accent: Crimson & Scarlet Red
+        red: {
+          DEFAULT: '#EF4444',
+          bright:  '#FF3B30',
+          crimson: '#DC2626',
+          dark:    '#991B1B',
+          wash:    'rgba(239, 68, 68, 0.10)',
+          glow:    'rgba(239, 68, 68, 0.30)',
+        },
+
+        // Aliases for components
         blue: {
-          DEFAULT: '#3B82F6',
-          bright:  '#60A5FA',
-          dim:     '#1D4ED8',
-          wash:    'rgba(59, 130, 246, 0.08)',
-          glow:    'rgba(59, 130, 246, 0.20)',
+          DEFAULT: '#EF4444',     // mapped to red accent
+          bright:  '#FF3B30',
+          dim:     '#DC2626',
+          wash:    'rgba(239, 68, 68, 0.10)',
+          glow:    'rgba(239, 68, 68, 0.30)',
         },
 
-        // Neon aliases
-        neon: {
-          green: '#10B981',
-          red:   '#EF4444',
-          cyan:  '#3B82F6',
-          blue:  '#3B82F6',
-        },
-
-        // Gold alias → Blue (so all existing text-gold / border-gold classes work)
-        gold: {
-          DEFAULT: '#3B82F6',
-          dim:     '#1D4ED8',
-          ember:   '#60A5FA',
-          wash:    'rgba(59, 130, 246, 0.08)',
-          glow:    'rgba(59, 130, 246, 0.20)',
+        green: {
+          DEFAULT: '#10B981',
+          bright:  '#34D399',
+          dim:     '#059669',
+          wash:    'rgba(16, 185, 129, 0.10)',
         },
 
         text: {
-          primary: '#F0F4FF',
-          muted:   '#94A3B8',
-          dim:     '#4B6282',
+          primary: '#FFFFFF',     // Crisp Pure White
+          secondary: '#E5E5E5',   // Off-White
+          muted:   '#A3A3A3',     // Silver Grey
+          dim:     '#666666',     // Dark Grey
         }
       },
       animation: {
-        marquee:   'marquee 25s linear infinite',
-        scanline:  'scanline 8s linear infinite',
-        pulseSlow: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        shimmer:   'shimmer 2s ease-in-out infinite',
-        'gold-pulse': 'bluePulse 3s ease-in-out infinite',
+        'red-pulse': 'redPulse 2.5s ease-in-out infinite',
       },
       keyframes: {
-        marquee: {
-          '0%':   { transform: 'translateX(0%)' },
-          '100%': { transform: 'translateX(-100%)' },
-        },
-        scanline: {
-          '0%':   { transform: 'translateY(-100%)' },
-          '100%': { transform: 'translateY(100vh)' },
-        },
-        shimmer: {
-          '0%, 100%': { opacity: 0.5 },
-          '50%':      { opacity: 1 },
-        },
-        bluePulse: {
-          '0%, 100%': { boxShadow: '0 0 8px rgba(59, 130, 246, 0.2)' },
-          '50%':      { boxShadow: '0 0 24px rgba(59, 130, 246, 0.5)' },
+        redPulse: {
+          '0%, 100%': { boxShadow: '0 0 10px rgba(239, 68, 68, 0.25)' },
+          '50%':      { boxShadow: '0 0 25px rgba(239, 68, 68, 0.60)' },
         },
       },
       boxShadow: {
-        'gold-sm':  '0 0 10px rgba(59, 130, 246, 0.25)',
-        'gold-md':  '0 0 20px rgba(59, 130, 246, 0.35)',
-        'gold-lg':  '0 0 40px rgba(59, 130, 246, 0.45)',
-        'green-sm': '0 0 10px rgba(16, 185, 129, 0.30)',
+        'red-sm':  '0 0 10px rgba(239, 68, 68, 0.30)',
+        'red-md':  '0 0 20px rgba(239, 68, 68, 0.40)',
+        'red-lg':  '0 0 40px rgba(239, 68, 68, 0.50)',
+        'white-sm': '0 0 10px rgba(255, 255, 255, 0.15)',
       },
       backgroundImage: {
-        'gold-gradient':        'linear-gradient(135deg, #3B82F6, #1D4ED8)',
-        'gold-gradient-subtle': 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(29,78,216,0.05))',
-        'blue-gradient':        'linear-gradient(135deg, #3B82F6, #1D4ED8)',
-        'green-gradient':       'linear-gradient(135deg, #10B981, #059669)',
+        'red-gradient':        'linear-gradient(135deg, #EF4444, #991B1B)',
+        'red-gradient-subtle': 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(153,27,27,0.05))',
+        'white-gradient':      'linear-gradient(135deg, #FFFFFF, #E5E5E5)',
+        'blue-gradient':       'linear-gradient(135deg, #EF4444, #B91C1C)',
       },
     },
   },

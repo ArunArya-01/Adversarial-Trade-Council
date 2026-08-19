@@ -1,15 +1,15 @@
-import { motion } from 'framer-motion'
-
-export default function ProgressBar({ progress, className = '', color = 'bg-gold glow-border-gold' }) {
-  const clamped = Math.max(0, Math.min(100, progress))
-  
+export default function ProgressBar({ progress = 0, color = 'red', className = '' }) {
+  const colors = {
+    red: 'bg-red-gradient',
+    white: 'bg-white',
+    green: 'bg-green-500',
+    blue: 'bg-red-gradient',
+  }
   return (
-    <div className={`h-2 bg-void border border-border rounded-full overflow-hidden ${className}`}>
-      <motion.div 
-        initial={{ width: 0 }}
-        animate={{ width: `${clamped}%` }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        className={`h-full ${color}`}
+    <div className={`w-full bg-border rounded-full h-1.5 overflow-hidden ${className}`}>
+      <div
+        className={`${colors[color] || colors.red} h-1.5 rounded-full transition-all duration-700`}
+        style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }}
       />
     </div>
   )

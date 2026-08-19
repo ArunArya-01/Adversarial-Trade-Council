@@ -1,75 +1,63 @@
 import { useCallback } from 'react'
-import useStore from '../store/useStore'
 
-const API_BASE = '/api' // Proxied via Vite
+const API = '/api'
 
 export default function useApi() {
-  const setWalletData = useStore((state) => state.setWalletData)
-  const setLessonsData = useStore((state) => state.setLessonsData)
-  const setNewsData = useStore((state) => state.setNewsData)
-
-  const fetchWalletBalance = useCallback(async (userId = 1) => {
+  const fetchModules = useCallback(async (market = 'both') => {
     try {
-      const res = await fetch(`${API_BASE}/wallet/balance?user_id=${userId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setWalletData({
-          cash: data.cash_balance,
-          positions: data.positions,
-          totalEquity: data.total_equity,
-          totalInvested: data.total_invested,
-          pnl: data.total_unrealised_pnl,
-          pnlPct: data.total_unrealised_pnl_pct
-        })
-      }
-    } catch (e) {
-      console.error("Failed to fetch wallet balance", e)
-    }
-  }, [setWalletData])
+      const res = await fetch(`${API}/learn/modules?market=${market}`)
+      if (res.ok) return await res.json()
+    } catch (e) { console.error('fetchModules error', e) }
+    return []
+  }, [])
 
-  const fetchLessons = useCallback(async () => {
+  const fetchLesson = useCallback(async (lessonId) => {
     try {
-      const res = await fetch(`${API_BASE}/lessons`)
-      if (res.ok) {
-        const data = await res.json()
-        setLessonsData({ list: data })
-      }
-    } catch (e) {
-      console.error("Failed to fetch lessons", e)
-    }
-  }, [setLessonsData])
+      const res = await fetch(`${API}/learn/lessons/${lessonId}`)
+      if (res.ok) return await res.json()
+    } catch (e) { console.error('fetchLesson error', e) }
+    return null
+  }, [])
 
-  const fetchNews = useCallback(async () => {
+  const submitQuiz = useCallback(async (lessonId, answers) => {
     try {
-      const res = await fetch(`${API_BASE}/news`)
-      if (res.ok) {
-        const data = await res.json()
-        setNewsData({ items: data })
-      }
-    } catch (e) {
-      console.error("Failed to fetch news", e)
-    }
-  }, [setNewsData])
-
-  const executeTrade = useCallback(async (action, symbol, qty, price, context) => {
-    try {
-      const endpoint = action === 'BUY' ? '/wallet/buy' : '/wallet/sell'
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const res = await fetch(`${API}/learn/quiz/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: 1, symbol, qty, price, market_context: context })
+        body: JSON.stringify({ lesson_id: lessonId, answers })
       })
-      const data = await res.json()
-      if (res.ok) {
-        fetchWalletBalance(1)
-        return { success: true, data }
-      }
-      return { success: false, error: data.detail }
-    } catch (e) {
-      console.error(`Failed to execute ${action}`, e)
-      return { success: false, error: e.message }
-    }
-  }, [fetchWalletBalance])
+      if (res.ok) return await res.json()
+    } catch (e) { console.error('submitQuiz error', e) }
+    return null
+  }, [])
 
-  return { fetchWalletBalance, fetchLessons, fetchNews, executeTrade }
+  const fetchScenarios = useCallback(async (difficulty = 'beginner') => {
+    try {
+      const res = await fetch(`${API}/practice/scenarios?difficulty=${difficulty}`)
+      if (res.ok) return await res.json()
+    } catch (e) { console.error('fetchScenarios error', e) }
+    return []
+  }, [])
+
+  const evaluateAnswer = useCallback(async (scenarioId, answer, context) => {
+    try {
+      const res = await fetch(`${API}/practice/evaluate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario_id: scenarioId, answer, context })
+      })
+      if (res.ok) return await res.json()
+    } catch (e) { console.error('evaluateAnswer error', e) }
+    return null
+  }, [])
+
+  const fetchNews = useCallback(async (category = 'all') => {
+    try {
+      const res = await fetch(`${API}/news?category=${category}`)
+      if (res.ok) return await res.json()
+    } catch (e) { console.error('fetchNews error', e) }
+    return { items: [], last_updated: null }
+  }, [])
+
+  return { fetchModules, fetchLesson, submitQuiz, fetchScenarios, evaluateAnswer, fetchNews }
 }

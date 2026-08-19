@@ -1,31 +1,8 @@
-# TradeMind AI — Backend Dependencies
-# Python 3.10+
-
-# Web Framework
-fastapi==0.115.6
-uvicorn[standard]==0.32.1
-websockets==13.1
-python-multipart==0.0.12
-
-# Database
-sqlalchemy==2.0.36
-
-# Data Validation
-pydantic==2.10.3
-pydantic-settings==2.6.1
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+sqlalchemy==2.0.31
+google-generativeai==0.7.2
 python-dotenv==1.0.1
-
-# AI / LangChain
-langchain==0.3.13
-langchain-google-genai==2.0.7
-langchain-core==0.3.28
-
-# Data
-pandas==2.2.3
-numpy==1.26.4
-
-# HTTP (for news fetching in Phase 2)
-httpx==0.27.2
-
-# Utilities
-tenacity==9.0.0
+feedparser==6.0.11
+aiohttp==3.9.5
+python-multipart==0.0.9
