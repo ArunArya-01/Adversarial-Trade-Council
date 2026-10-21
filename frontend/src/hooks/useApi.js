@@ -1,63 +1,52 @@
 import { useCallback } from 'react'
 
-const API = '/api'
+const ACADEMY_API = '/api/academy'
 
 export default function useApi() {
-  const fetchModules = useCallback(async (market = 'both') => {
+  const fetchChapters = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/learn/modules?market=${market}`)
+      const res = await fetch(`${ACADEMY_API}/chapters`)
       if (res.ok) return await res.json()
-    } catch (e) { console.error('fetchModules error', e) }
+    } catch (e) { console.error('fetchChapters error', e) }
     return []
   }, [])
 
-  const fetchLesson = useCallback(async (lessonId) => {
+  const fetchChapter = useCallback(async (chapterId) => {
     try {
-      const res = await fetch(`${API}/learn/lessons/${lessonId}`)
+      const res = await fetch(`${ACADEMY_API}/chapters/${chapterId}`)
       if (res.ok) return await res.json()
     } catch (e) { console.error('fetchLesson error', e) }
     return null
   }, [])
 
-  const submitQuiz = useCallback(async (lessonId, answers) => {
+  const submitQuiz = useCallback(async (chapterId, answers) => {
     try {
-      const res = await fetch(`${API}/learn/quiz/submit`, {
+      const res = await fetch(`${ACADEMY_API}/quizzes/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lesson_id: lessonId, answers })
+        body: JSON.stringify({ chapter_id: chapterId, answers })
       })
       if (res.ok) return await res.json()
     } catch (e) { console.error('submitQuiz error', e) }
     return null
   }, [])
 
-  const fetchScenarios = useCallback(async (difficulty = 'beginner') => {
+  const fetchPracticeCandles = useCallback(async (symbol, timeframe = '1D') => {
     try {
-      const res = await fetch(`${API}/practice/scenarios?difficulty=${difficulty}`)
+      const params = new URLSearchParams({ symbol, timeframe })
+      const res = await fetch(`${ACADEMY_API}/practice/candles?${params}`)
       if (res.ok) return await res.json()
-    } catch (e) { console.error('fetchScenarios error', e) }
+    } catch (e) { console.error('fetchPracticeCandles error', e) }
     return []
-  }, [])
-
-  const evaluateAnswer = useCallback(async (scenarioId, answer, context) => {
-    try {
-      const res = await fetch(`${API}/practice/evaluate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scenario_id: scenarioId, answer, context })
-      })
-      if (res.ok) return await res.json()
-    } catch (e) { console.error('evaluateAnswer error', e) }
-    return null
   }, [])
 
   const fetchNews = useCallback(async (category = 'all') => {
     try {
-      const res = await fetch(`${API}/news?category=${category}`)
+      const res = await fetch(`${ACADEMY_API}/news?category=${category}`)
       if (res.ok) return await res.json()
     } catch (e) { console.error('fetchNews error', e) }
     return { items: [], last_updated: null }
   }, [])
 
-  return { fetchModules, fetchLesson, submitQuiz, fetchScenarios, evaluateAnswer, fetchNews }
+  return { fetchChapters, fetchChapter, submitQuiz, fetchPracticeCandles, fetchNews }
 }

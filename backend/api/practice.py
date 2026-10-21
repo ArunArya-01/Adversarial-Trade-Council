@@ -141,6 +141,7 @@ def get_candles(symbol: str, timeframe: str = "1D"):
         current = close_p
         
     return {
+        "data_source": "simulated",
         "symbol": sym_clean,
         "timeframe": timeframe,
         "trend_type": trend,

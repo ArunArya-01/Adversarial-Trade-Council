@@ -1,14 +1,15 @@
-import { NavLink } from 'react-router-dom'
-import { BookOpen, Target, Newspaper, TrendingUp, ShieldAlert, Award } from 'lucide-react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { BookOpen, Target, Newspaper, TrendingUp, FlaskConical, Award } from 'lucide-react'
 import useStore from '../../store/useStore'
 
 const NAV = [
-  { name: 'Learn', path: '/learn', icon: BookOpen, desc: 'Training modules' },
-  { name: 'Practice', path: '/practice', icon: Target, desc: 'Real scenarios' },
-  { name: 'News', path: '/news', icon: Newspaper, desc: 'Live market feed' },
+  { name: 'Learn', path: '/academy/learn', icon: BookOpen, desc: 'Training modules' },
+  { name: 'Practice', path: '/academy/practice', icon: Target, desc: 'Simulated scenarios' },
+  { name: 'News', path: '/academy/news', icon: Newspaper, desc: 'RSS market feed' },
 ]
 
 export default function Sidebar() {
+  const { pathname } = useLocation()
   const totalXP = useStore(s => s.totalXP)
   const getLevel = useStore(s => s.getLevel)
   const portfolio = useStore(s => s.portfolio)
@@ -29,9 +30,19 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Nav Menu */}
+      <div className="px-3 pt-4 grid grid-cols-2 gap-2">
+        <NavLink to="/academy/learn" className={`rounded-lg px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider border ${!pathname.startsWith('/lab') ? 'border-red-500/50 bg-red-500/15 text-white' : 'border-border text-text-muted hover:text-white'}`}>Academy</NavLink>
+        <NavLink to="/lab" className={`rounded-lg px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider border ${pathname.startsWith('/lab') ? 'border-red-500/50 bg-red-500/15 text-white' : 'border-border text-text-muted hover:text-white'}`}>Lab</NavLink>
+      </div>
+
+      {/* Module navigation */}
       <nav className="flex-1 py-5 px-3 space-y-1.5">
-        {NAV.map(item => (
+        {pathname.startsWith('/lab') ? (
+          <NavLink to="/lab" className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-red-500/15 text-white border border-red-500/40">
+            <FlaskConical size={18} className="text-red-500" />
+            <div><div className="text-sm font-bold">Investment Lab</div><div className="text-[10px] text-text-dim">Research platform</div></div>
+          </NavLink>
+        ) : NAV.map(item => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -77,9 +88,9 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* Portfolio value */}
+        {/* Academy simulation portfolio */}
         <div className="bg-void rounded-xl p-3.5 border border-border">
-          <div className="text-[10px] text-text-dim uppercase tracking-widest font-mono mb-1">Simulated Wallet</div>
+          <div className="text-[10px] text-text-dim uppercase tracking-widest font-mono mb-1">Academy Simulation</div>
           <div className="text-base font-extrabold font-mono text-white">₹{portfolio.totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
           <div className={`text-xs font-mono mt-0.5 font-bold ${
             portfolio.pnl >= 0 ? 'text-green-400' : 'text-red-400'

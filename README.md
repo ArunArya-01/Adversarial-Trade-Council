@@ -1,19 +1,17 @@
-# TradeMind AI — Trading Academy & AI Sandbox
+# TradeMind AI — Trading Academy & AI Investment Lab
 
-**A full-stack educational trading ecosystem that teaches retail users how to trade through interactive lessons, a live market replay simulator, and real-time AI mentorship.**
+**A trading education application with a separate research-oriented Investment Lab. Academy practice uses clearly labelled simulated data; the Lab does not yet provide market data, model results, or trading functionality.**
 
 ---
 
 ## Product Vision
 
-TradeMind AI is a "One-Stop Destination" for trading education:
+TradeMind AI currently has two deliberately separate modules:
 
 | Pillar | Description |
 | :--- | :--- |
-| 📚 **Interactive Curriculum** | Step-by-step modules covering market fundamentals, chart reading, and risk management |
-| 💰 **$100k Virtual Sandbox** | A paper-trading wallet with tick-by-tick market replay |
-| 🤖 **AI Mentor + Devil's Advocate** | LLM agents that grade your trades in real-time and surface adversarial risks |
-| 📰 **Agentic News Feed** | AI swarm that translates institutional jargon into plain beginner English |
+| 📚 **Trading Academy** | Lessons, quizzes, simulated practice, and RSS market news |
+| 🧪 **AI Investment Lab** | Research workspace; data ingestion, backtesting, ML, risk, and paper trading are planned |
 
 ---
 
@@ -21,13 +19,12 @@ TradeMind AI is a "One-Stop Destination" for trading education:
 
 ```
 Adversarial-Trade-Council/
-├── frontend/          ← Vite + React + Tailwind (Phase 2)
-└── backend/           ← FastAPI + SQLite + LangChain (Phase 1 — active)
+├── frontend/          ← Vite + React + Tailwind
+└── backend/           ← FastAPI + SQLite
     ├── main.py
     ├── database/      ← SQLAlchemy ORM, SQLite
-    ├── api/           ← /lessons, /wallet, /news routes
-    ├── engine/        ← Market Replay CSV streamer
-    └── agents/        ← AI Mentor, Devil's Advocate, News Interpreter
+    ├── api/           ← Academy and Lab routes
+    └── database/      ← SQLAlchemy ORM, SQLite
 ```
 
 ---
@@ -43,13 +40,13 @@ cp .env.example .env      # add your GEMINI_API_KEY
 uvicorn main:app --reload --port 8000
 ```
 
-### Frontend (Phase 2)
+### Frontend
 ```bash
 cd frontend
 npm install && npm run dev
 ```
 
-API docs available at: `http://localhost:8000/docs`
+API docs available at: `http://localhost:8000/docs`. Canonical routes use `/api/academy/*` and `/api/lab/status`; legacy Academy routes remain temporarily available.
 
 ---
 
@@ -59,19 +56,19 @@ API docs available at: `http://localhost:8000/docs`
 | :--- | :--- |
 | **Backend** | FastAPI (Python 3.10+) |
 | **Database** | SQLite via SQLAlchemy |
-| **AI Agents** | LangChain + Google Gemini 1.5 Flash |
-| **Data Engine** | Pandas (CSV market replay) |
+| **AI / ML** | Not yet implemented in the active application |
+| **Practice Data** | Deterministic synthetic OHLCV; RSS news feeds |
 | **Frontend** | React, Vite, Tailwind CSS |
-| **Real-time** | WebSocket (market tick stream) |
+| **Real-time** | No live market-data stream currently connected |
 
 ---
 
 ## Roadmap
 
-- [x] **Phase 1** — Backend scaffold: lessons, wallet, news, replay engine, AI agents
-- [ ] **Phase 2** — React frontend: Dashboard, Lesson Player, Sandbox, News Feed
-- [ ] **Phase 3** — Live paper trading via Alpaca API
-- [ ] **Phase 4** — User auth, leaderboard, streak tracking
+- [x] **Phase 1** — Dual module foundation and canonical Academy/Lab API surface
+- [ ] **Phase 2** — Historical data ingestion and validation
+- [ ] **Phase 3** — Reproducible backtesting
+- [ ] **Phase 4** — Colab ML research and model artifact integration
 
 ---
 

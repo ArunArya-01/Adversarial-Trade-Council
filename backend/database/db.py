@@ -3,7 +3,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'trademind_v2.db')
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+# A caller can provide an isolated database for tests or deployment. The default
+# remains the existing local SQLite file, preserving current developer setup.
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
