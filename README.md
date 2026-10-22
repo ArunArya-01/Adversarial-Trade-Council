@@ -62,6 +62,18 @@ open, high, low, close, volume`. Imports are validated, content-hashed, and
 stored separately as raw, cleaned, and derived-feature artifacts. No live feed,
 broker connection, prediction, or strategy performance is provided.
 
+### Historical backtesting
+
+`POST /api/lab/backtests` accepts an imported `dataset_id` and one of
+`buy_and_hold`, `sma_crossover`, or `momentum`. Signals are calculated at the
+close and executed at the next bar's open (except the buy-and-hold reference,
+which enters at the first available open). Fees, slippage, and maximum volume
+participation are configurable. Each run returns a trade ledger, equity curve,
+and comparison to buy-and-hold. Results are historical simulations, not
+predictions or investment advice. An optional `evaluation_start` must exactly
+match a dataset timestamp; bars before it remain available only to warm
+indicators, while cash accounting and reported metrics begin at that timestamp.
+
 ---
 
 ## Tech Stack

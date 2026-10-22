@@ -231,3 +231,12 @@ class LocalDatasetStore:
         for path in sorted(self.metadata_dir.glob("*.json")):
             datasets.append(json.loads(path.read_text(encoding="utf-8")))
         return datasets
+
+    def load_clean_bars(self, dataset_id: str) -> list[MarketBar]:
+        """Load a validated historical dataset without re-reading untrusted CSV."""
+        if not dataset_id or any(char not in "0123456789abcdef" for char in dataset_id) or len(dataset_id) != 16:
+            raise DatasetValidationError("invalid dataset identifier")
+        path = self.clean_dir / f"{dataset_id}.jsonl"
+        if not path.exists():
+            raise DatasetValidationError("dataset not found")
+        return [MarketBar(**json.loads(line)) for line in path.read_text(encoding="utf-8").splitlines() if line]
