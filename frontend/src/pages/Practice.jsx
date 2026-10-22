@@ -1,27 +1,44 @@
 import { useState, useEffect, useRef } from 'react'
-import { Target, Play, Pause, SkipForward, RotateCcw, TrendingUp, TrendingDown, ShieldAlert, Zap, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, DollarSign, Activity, MessageSquareQuote, Send, Sparkles, HelpCircle, Bot, ChevronDown, Search, Layers, PieChart, Landmark, Globe, BarChart2, Calendar, ZoomIn, ZoomOut, Sliders } from 'lucide-react'
+import { Target, Play, Pause, SkipForward, RotateCcw, TrendingUp, TrendingDown, ShieldAlert, Zap, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, DollarSign, Activity, MessageSquareQuote, Send, Sparkles, HelpCircle, Bot, ChevronDown, Search, Layers, PieChart, Landmark, Globe, BarChart2, Calendar, ZoomIn, ZoomOut, Sliders, Clock, Flame, Check } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useStore from '../store/useStore'
 import ProgressBar from '../components/ui/ProgressBar'
+import TradingViewChart from '../components/practice/TradingViewChart'
+
+// Initial Default Candles Helper
+function getDefaultCandles(basePrice = 1600, trend = 'downtrend') {
+  const arr = []
+  let curr = basePrice * 1.05
+  for (let i = 0; i < 45; i++) {
+    const delta = (Math.sin(i * 0.4) * 0.4 + (trend === 'downtrend' ? -0.28 : 0.28)) * curr * 0.008
+    const o = Math.round(curr * 10) / 10
+    const cl = Math.round(Math.max(10, curr + delta) * 10) / 10
+    const h = Math.round((Math.max(o, cl) + Math.abs(delta) * 0.5) * 10) / 10
+    const l = Math.round((Math.min(o, cl) - Math.abs(delta) * 0.5) * 10) / 10
+    arr.push({ time: `T${i+1}`, open: o, high: h, low: l, close: cl, volume: 35000 + i * 800 })
+    curr = cl
+  }
+  return arr
+}
 
 // ── Multi-Asset Universal Directory ──
 const ASSETS_DIRECTORY = [
   {
-    id: 'hdfc-bank',
+    id: 'zomato',
     type: 'stock',
-    symbol: 'HDFCBANK',
-    name: 'HDFC Bank Ltd.',
-    market: 'NSE · Banking',
+    symbol: 'ZOMATO',
+    name: 'Zomato Ltd. (Blinkit)',
+    market: 'NSE · Quick Commerce',
     category: 'Stocks',
-    price: 1585.00,
-    change: -2.40,
-    pe: 18.5,
-    high52: 1794.0,
-    low52: 1363.0,
-    marketBehavior: '📉 Sustained Downtrend (Red Candles Dominating - Practice Shorting)',
-    context: 'HDFC Bank in sustained downtrend following NIM margin compression. Notice the series of lower highs and lower lows breaking key horizontal supports.',
-    stopLossPrice: 1610,
-    targetPrice: 1540
+    price: 265.40,
+    change: 4.10,
+    pe: 110.0,
+    high52: 298.0,
+    low52: 95.0,
+    marketBehavior: '🚀 Strong Bullish Uptrend (Dominant Green Breakouts)',
+    context: 'Blinkit quick-commerce dark stores expand 120% YoY reaching positive EBITDA. Institutional FII net buying aggressive above ₹260.',
+    stopLossPrice: 254,
+    targetPrice: 280
   },
   {
     id: 'tatamotors',
@@ -58,21 +75,21 @@ const ASSETS_DIRECTORY = [
     targetPrice: 2990
   },
   {
-    id: 'zomato',
+    id: 'hdfc-bank',
     type: 'stock',
-    symbol: 'ZOMATO',
-    name: 'Zomato Ltd. (Blinkit)',
-    market: 'NSE · Quick Commerce',
+    symbol: 'HDFCBANK',
+    name: 'HDFC Bank Ltd.',
+    market: 'NSE · Banking',
     category: 'Stocks',
-    price: 265.40,
-    change: 4.10,
-    pe: 110.0,
-    high52: 298.0,
-    low52: 95.0,
-    marketBehavior: '🚀 Strong Bullish Uptrend (Dominant Green Breakouts)',
-    context: 'Blinkit quick-commerce dark stores expand 120% YoY reaching positive EBITDA. Institutional FII net buying aggressive above ₹260.',
-    stopLossPrice: 254,
-    targetPrice: 280
+    price: 1585.00,
+    change: -2.40,
+    pe: 18.5,
+    high52: 1794.0,
+    low52: 1363.0,
+    marketBehavior: '📉 Sustained Downtrend (Red Candles Dominating - Practice Shorting)',
+    context: 'HDFC Bank in sustained downtrend following NIM margin compression. Notice the series of lower highs and lower lows breaking key horizontal supports.',
+    stopLossPrice: 1610,
+    targetPrice: 1540
   },
   {
     id: 'infy-earnings',
@@ -159,20 +176,26 @@ export default function Practice() {
   const [selectedAsset, setSelectedAsset] = useState(ASSETS_DIRECTORY[0])
   const [selectedTimeframe, setSelectedTimeframe] = useState('1D')
   const [chartType, setChartType] = useState('candles')
+  const [showEma, setShowEma] = useState(true)
   const [categoryFilter, setCategoryFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   
-  // Candles from backend API
-  const [candlesData, setCandlesData] = useState([])
-  const [revealedCount, setRevealedCount] = useState(40)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [hoveredCandle, setHoveredCandle] = useState(null)
+  // Candles from backend API + Live Ticking
+  const [candlesData, setCandlesData] = useState(() => getDefaultCandles(265, 'uptrend'))
+  const [latestTick, setLatestTick] = useState(null)
+  const [livePriceFlash, setLivePriceFlash] = useState(null) // 'up' | 'down' | null
+  const [liveSpeed, setLiveSpeed] = useState(1) // 1x, 3x, 8x
+  const [isLiveMarketActive, setIsLiveMarketActive] = useState(true)
+  const [marketClock, setMarketClock] = useState({ hour: 9, minute: 32, second: 15 })
+
+  const [crosshairData, setCrosshairData] = useState(null)
   const [activeTab, setActiveTab] = useState('order')
+  const [orderToast, setOrderToast] = useState(null)
 
   // Trading State (Stocks)
-  const [tradeQuantity, setTradeQuantity] = useState(10)
-  const [stopLossInput, setStopLossInput] = useState('')
-  const [targetInput, setTargetInput] = useState('')
+  const [tradeQuantity, setTradeQuantity] = useState(25)
+  const [stopLossInput, setStopLossInput] = useState('254')
+  const [targetInput, setTargetInput] = useState('280')
   const [openPosition, setOpenPosition] = useState(null)
   const [tradeOutcome, setTradeOutcome] = useState(null)
 
@@ -186,42 +209,106 @@ export default function Practice() {
     {
       id: 1,
       sender: 'ai',
-      text: '👋 I am your AI Trading Mentor. Notice the Green (Bullish) and Red (Bearish) candles. Ask me any doubt about downtrends, shorting HDFC Bank, 20/50 EMA dynamic support, or SIP compounding!'
+      text: '👋 I am your AI Trading Mentor. You are in the **Live Simulated Trading Session (9:15 AM - 3:30 PM)**! Notice the price ticking second-by-second. Click **BUY** or **SELL** to enter a live trade and watch your PnL fluctuate in real-time!'
     }
   ])
   const [doubtInput, setDoubtInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const chatBottomRef = useRef(null)
-  const chartScrollContainerRef = useRef(null)
 
   const portfolio = useStore(s => s.portfolio)
   const updatePortfolio = useStore(s => s.updatePortfolio)
   const resetPortfolio = useStore(s => s.resetPortfolio)
 
-  const timerRef = useRef(null)
-
   // Fetch Historical Candles from Backend
   useEffect(() => {
     if (selectedAsset.type === 'stock') {
-      fetch(`/api/practice/candles?symbol=${selectedAsset.symbol}&timeframe=${selectedTimeframe}`)
+      fetch(`/api/academy/practice/candles?symbol=${selectedAsset.symbol}&timeframe=${selectedTimeframe}`)
         .then(res => res.json())
         .then(data => {
           if (data && data.candles && data.candles.length > 0) {
             setCandlesData(data.candles)
-            setRevealedCount(selectedTimeframe === '1D' ? Math.min(40, data.candles.length) : data.candles.length)
+            const last = data.candles[data.candles.length - 1]
+            setLatestTick(last)
           }
         })
         .catch(err => {
           console.error('Failed to fetch backend candles', err)
         })
-      setHoveredCandle(null)
-      setTimeout(() => {
-        if (chartScrollContainerRef.current) {
-          chartScrollContainerRef.current.scrollLeft = chartScrollContainerRef.current.scrollWidth
-        }
-      }, 80)
+      setCrosshairData(null)
     }
   }, [selectedAsset, selectedTimeframe])
+
+  // ── Real-Time Market Tick Engine (Second-by-Second Price Action) ──
+  useEffect(() => {
+    if (!isLiveMarketActive || selectedAsset.type !== 'stock' || candlesData.length === 0) return
+
+    const tickIntervalMs = Math.max(300, 1000 / liveSpeed)
+
+    const interval = setInterval(() => {
+      // 1. Advance market clock
+      setMarketClock(prev => {
+        let sec = prev.second + (liveSpeed >= 3 ? 15 : 1)
+        let min = prev.minute
+        let hr = prev.hour
+        if (sec >= 60) {
+          min += Math.floor(sec / 60)
+          sec = sec % 60
+        }
+        if (min >= 60) {
+          hr += Math.floor(min / 60)
+          min = min % 60
+        }
+        if (hr > 15 || (hr === 15 && min > 30)) {
+          // Market Day Close -> Reset to 09:15 AM
+          hr = 9
+          min = 15
+          sec = 0
+        }
+        return { hour: hr, minute: min, second: sec }
+      })
+
+      // 2. Compute tick price change
+      setCandlesData(prev => {
+        if (!prev || prev.length === 0) return prev
+        const lastIdx = prev.length - 1
+        const active = { ...prev[lastIdx] }
+
+        // Micro tick step based on asset volatility
+        const isBullishAsset = selectedAsset.marketBehavior.includes('Uptrend') || selectedAsset.marketBehavior.includes('Breakout')
+        const isBearishAsset = selectedAsset.marketBehavior.includes('Downtrend')
+        
+        const tickDelta = (Math.random() - (isBullishAsset ? 0.44 : isBearishAsset ? 0.56 : 0.49)) * active.close * 0.0018
+        const newClose = Math.round(Math.max(5.0, active.close + tickDelta) * 100) / 100
+        const newHigh = Math.round(Math.max(active.high, newClose) * 100) / 100
+        const newLow = Math.round(Math.min(active.low, newClose) * 100) / 100
+        const newVol = (active.volume || 30000) + Math.floor(Math.random() * 400 + 50)
+
+        const updatedCandle = {
+          ...active,
+          close: newClose,
+          high: newHigh,
+          low: newLow,
+          volume: newVol,
+        }
+
+        setLatestTick(updatedCandle)
+        setLivePriceFlash(tickDelta >= 0 ? 'up' : 'down')
+        setTimeout(() => setLivePriceFlash(null), 350)
+
+        const copy = [...prev]
+        copy[lastIdx] = updatedCandle
+        return copy
+      })
+    }, tickIntervalMs)
+
+    return () => clearInterval(interval)
+  }, [isLiveMarketActive, liveSpeed, selectedAsset, candlesData.length])
+
+  // Current Live Price
+  const currentPrice = selectedAsset.type === 'stock'
+    ? (latestTick?.close || candlesData[candlesData.length - 1]?.close || selectedAsset.price)
+    : selectedAsset.nav
 
   // Filtered Assets
   const filteredAssets = ASSETS_DIRECTORY.filter(a => {
@@ -233,52 +320,17 @@ export default function Practice() {
   // Select Asset
   const handleSelectAsset = (asset) => {
     setSelectedAsset(asset)
-    setIsPlaying(false)
     setOpenPosition(null)
     setTradeOutcome(null)
     setSipSuccessMsg(null)
-    setHoveredCandle(null)
+    setCrosshairData(null)
     if (asset.type === 'stock') {
       setStopLossInput(String(asset.stopLossPrice || (asset.price * 0.98).toFixed(1)))
       setTargetInput(String(asset.targetPrice || (asset.price * 1.04).toFixed(1)))
     }
   }
 
-  // Current Stock Price / Visible Candles
-  const visibleCandles = selectedAsset.type === 'stock' ? candlesData.slice(0, revealedCount) : []
-  const currentCandle = visibleCandles[visibleCandles.length - 1]
-  const currentPrice = selectedAsset.type === 'stock' ? (currentCandle?.close || selectedAsset.price) : selectedAsset.nav
-  const isPositiveDay = selectedAsset.change >= 0
-
-  // Replay Step Forward
-  const stepForward = () => {
-    if (revealedCount < candlesData.length) {
-      setRevealedCount(prev => prev + 1)
-    } else {
-      setIsPlaying(false)
-    }
-  }
-
-  // Play / Pause Replay Loop
-  useEffect(() => {
-    if (isPlaying && selectedAsset.type === 'stock') {
-      timerRef.current = setInterval(() => {
-        setRevealedCount(prev => {
-          if (prev < candlesData.length) {
-            return prev + 1
-          } else {
-            setIsPlaying(false)
-            return prev
-          }
-        })
-      }, 1000)
-    } else {
-      clearInterval(timerRef.current)
-    }
-    return () => clearInterval(timerRef.current)
-  }, [isPlaying, candlesData])
-
-  // Execute Stock Order
+  // Execute Stock Order (Instant Fill)
   const executeOrder = (direction) => {
     const sl = parseFloat(stopLossInput) || (direction === 'BUY' ? currentPrice * 0.98 : currentPrice * 1.02)
     const tp = parseFloat(targetInput) || (direction === 'BUY' ? currentPrice * 1.04 : currentPrice * 0.96)
@@ -296,13 +348,21 @@ export default function Practice() {
       entryPrice: currentPrice,
       stopLoss: sl,
       target: tp,
-      openedAt: currentCandle ? currentCandle.time : 'Market Open',
+      openedAt: `${String(marketClock.hour).padStart(2, '0')}:${String(marketClock.minute).padStart(2, '0')}:${String(marketClock.second).padStart(2, '0')}`,
       closed: false
     }
 
     setOpenPosition(newPos)
     setTradeOutcome(null)
-    setIsPlaying(true)
+
+    // Trigger Order Fill Toast
+    setOrderToast({
+      direction,
+      qty: tradeQuantity,
+      price: currentPrice,
+      symbol: selectedAsset.symbol
+    })
+    setTimeout(() => setOrderToast(null), 4000)
   }
 
   // Close Position
@@ -325,7 +385,6 @@ export default function Practice() {
     })
 
     setOpenPosition(null)
-    setIsPlaying(false)
     setTradeOutcome({
       ...pos,
       exitPrice,
@@ -335,20 +394,20 @@ export default function Practice() {
     })
   }
 
-  // Position Stop Loss / Target Checker
+  // Live Position Stop Loss / Target Auto-Checker
   useEffect(() => {
     if (!openPosition) return
     const pos = openPosition
     if (pos.direction === 'BUY' && currentPrice >= pos.target) {
-      closePosition(currentPrice, 'Target Reached 🎯')
+      closePosition(currentPrice, 'Target Reached 🎯 (+Profit Booked)')
     } else if (pos.direction === 'BUY' && currentPrice <= pos.stopLoss) {
-      closePosition(currentPrice, 'Stop-Loss Hit 🛑')
+      closePosition(currentPrice, 'Stop-Loss Hit 🛑 (Risk Cut)')
     } else if (pos.direction === 'SELL' && currentPrice <= pos.target) {
-      closePosition(currentPrice, 'Target Reached 🎯 (Short Profit)')
+      closePosition(currentPrice, 'Target Reached 🎯 (+Short Profit Booked)')
     } else if (pos.direction === 'SELL' && currentPrice >= pos.stopLoss) {
-      closePosition(currentPrice, 'Stop-Loss Hit 🛑')
+      closePosition(currentPrice, 'Stop-Loss Hit 🛑 (Short Stopped)')
     }
-  }, [revealedCount, currentPrice])
+  }, [currentPrice])
 
   // Execute Mutual Fund SIP
   const executeMutualFundSip = () => {
@@ -388,14 +447,20 @@ export default function Practice() {
     setTimeout(() => {
       let answer = ''
       const lower = q.toLowerCase()
-      if (lower.includes('green') || lower.includes('red') || lower.includes('color')) {
-        answer = `**Candlestick Colors**: 🟢 **Green Candles** mean the price closed HIGHER than it opened (Buyers won that session). 🔴 **Red Candles** mean the price closed LOWER than it opened (Sellers dominated). Look at **HDFC Bank** for a dominant red downtrend vs **Zomato** for a strong green uptrend!`
+      if (lower.includes('live') || lower.includes('9 to 4') || lower.includes('time') || lower.includes('market open') || lower.includes('how does buy and sell work')) {
+        answer = `**How Real Live Market Trading Works**:
+1. **Exchange Trading Hours**: Indian markets (NSE/BSE) trade actively from **9:15 AM to 3:30 PM IST**.
+2. **Real-Time Price Discovery**: Every second, buyers place 'Bid' orders and sellers place 'Ask' orders. The price moves whenever trades are matched.
+3. **Live Candle Formation**: A 15m or 1-day candlestick starts at the Open. As seconds tick, its high, low, and current close wicks fluctuate continuously until that timeframe closes!
+4. **How You Profit**: 
+   - **BUY / LONG ↗**: You buy at ₹${currentPrice}. If the live price ticks UP to ₹${targetInput}, you make profit!
+   - **SELL / SHORT ↘**: If you anticipate a drop, you sell high and buy back lower to profit from falling prices!`
+      } else if (lower.includes('green') || lower.includes('red') || lower.includes('color')) {
+        answer = `**Candlestick Colors**: 🟢 **Green Candles** mean the price closed HIGHER than it opened (Buyers won that session). 🔴 **Red Candles** mean the price closed LOWER than it opened (Sellers dominated).`
       } else if (lower.includes('down') || lower.includes('bearish') || lower.includes('hdfc') || lower.includes('short')) {
         answer = `**Downtrend & Short-Selling**: Notice **HDFC Bank** with red candles driving the price down. When a stock breaks below the 20 & 50 EMA, click **\`SELL / SHORT\`** to profit from the decline!`
-      } else if (lower.includes('rsi')) {
-        answer = `The **RSI (14) indicator** below calculates momentum smoothly. An RSI value **under 30** means oversold; **above 70** means overbought. Current RSI is **${Math.round(currentRsi)}**.`
       } else {
-        answer = `Regarding **"${q}"** for **${selectedAsset.name}**: Market behavior is **${selectedAsset.marketBehavior || 'Dynamic'}**. Check the Green/Red candle rhythm and the 20/50 EMA before entering.`
+        answer = `Regarding **"${q}"** for **${selectedAsset.name}**: Look at the active ticking price (**₹${currentPrice}**) and market clock. Always set a Stop-Loss before entering a trade.`
       }
 
       setDoubtMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: answer }])
@@ -411,6 +476,10 @@ export default function Practice() {
         : (openPosition.entryPrice - currentPrice) * openPosition.quantity)
     : 0
 
+  const livePnLPct = openPosition
+    ? ((currentPrice - openPosition.entryPrice) / openPosition.entryPrice) * (openPosition.direction === 'BUY' ? 100 : -100)
+    : 0
+
   // SIP Compounding Calculator Formula
   const monthlyRate = (selectedAsset.cagr3y || 14) / 100 / 12
   const totalMonths = sipTenureYears * 12
@@ -420,29 +489,14 @@ export default function Practice() {
   )
   const wealthGained = projectedCorpus - totalInvestedSip
 
-  // ── Calculate Smooth EMA and Smooth Wilder's RSI ──
-  const calculateEma = (period) => {
-    const k = 2 / (period + 1)
-    let emaArray = []
-    let ema = visibleCandles[0]?.close || 0
-    visibleCandles.forEach((c) => {
-      ema = c.close * k + ema * (1 - k)
-      emaArray.push(ema)
-    })
-    return emaArray
-  }
-
-  const ema20 = calculateEma(20)
-  const ema50 = calculateEma(50)
-
   // Smooth Wilder's RSI Algorithm
   const calculateSmoothRsi = () => {
-    if (visibleCandles.length < 5) return [50]
+    if (candlesData.length < 5) return [50]
     let gains = 0, losses = 0
     let rsiArray = []
     
-    for (let i = 1; i < Math.min(14, visibleCandles.length); i++) {
-      const diff = visibleCandles[i].close - visibleCandles[i - 1].close
+    for (let i = 1; i < Math.min(14, candlesData.length); i++) {
+      const diff = candlesData[i].close - candlesData[i - 1].close
       if (diff >= 0) gains += diff
       else losses += Math.abs(diff)
       rsiArray.push(50)
@@ -451,8 +505,8 @@ export default function Practice() {
     let avgGain = gains / 14
     let avgLoss = losses / 14
     
-    for (let i = 14; i < visibleCandles.length; i++) {
-      const diff = visibleCandles[i].close - visibleCandles[i - 1].close
+    for (let i = 14; i < candlesData.length; i++) {
+      const diff = candlesData[i].close - candlesData[i - 1].close
       const gain = diff > 0 ? diff : 0
       const loss = diff < 0 ? Math.abs(diff) : 0
       
@@ -468,37 +522,53 @@ export default function Practice() {
 
   const rsiValues = calculateSmoothRsi()
   const currentRsi = rsiValues[rsiValues.length - 1] || 50
-
-  // SVG Chart Dimensions with Horizontal Scroll Width
-  const chartHeight = 260
-  const candleColWidth = 24
-  const chartWidth = Math.max(760, visibleCandles.length * candleColWidth + 90)
-  const rsiHeight = 75
-
-  const minPrice = visibleCandles.length > 0 ? Math.min(...visibleCandles.map(c => c.low)) * 0.995 : 100
-  const maxPrice = visibleCandles.length > 0 ? Math.max(...visibleCandles.map(c => c.high)) * 1.005 : 200
-  const priceRange = maxPrice - minPrice || 1
-  const getY = (val) => chartHeight - ((val - minPrice) / priceRange) * (chartHeight - 50) - 25
+  const rsiHeight = 70
   const getRsiY = (val) => rsiHeight - (val / 100) * (rsiHeight - 20) - 10
+
+  const formattedClock = `${String(marketClock.hour).padStart(2, '0')}:${String(marketClock.minute).padStart(2, '0')}:${String(marketClock.second).padStart(2, '0')} IST`
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       
-      {/* ── Top Bar & Live Capital ── */}
+      {/* ── Top Bar: Live Market Clock & Virtual Capital ── */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
-          <div className="flex items-center gap-2 mb-1 font-mono text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-emerald-400 font-extrabold uppercase tracking-widest">Live Multi-Regime Financial Terminal</span>
+          <div className="flex items-center gap-3 mb-1 font-mono text-xs">
+            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              🟢 MARKET OPEN (09:15 - 15:30)
+            </span>
+            <span className="text-white font-bold flex items-center gap-1 bg-void px-2 py-0.5 rounded border border-border">
+              <Clock size={12} className="text-red-400" /> {formattedClock}
+            </span>
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-            <Activity className="text-red-500" size={26} /> Institutional Candlestick & Behavior Terminal
+            <Activity className="text-red-500" size={26} /> Live Real-Time Trading Terminal
           </h1>
-          <p className="text-xs text-text-muted mt-0.5">🟢 Green (Bullish) and 🔴 Red (Bearish) Candlesticks across distinct real-world trends (Downtrends, Consolidations, Breakouts & Cyclical Swings).</p>
+          <p className="text-xs text-text-muted mt-0.5">Live tick-by-tick order matching, pulsating PnL, 🟢 Green & 🔴 Red candlesticks, and real-time execution.</p>
         </div>
 
-        {/* Live Capital Stats */}
+        {/* Live Capital Stats & Speed Controls */}
         <div className="flex items-center gap-4 bg-void p-3 rounded-2xl border border-border">
+          
+          {/* Speed Selector */}
+          <div className="pr-3 border-r border-border font-mono text-xs">
+            <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">Tick Speed</div>
+            <div className="flex gap-1">
+              {[1, 3, 8].map(s => (
+                <button
+                  key={s}
+                  onClick={() => setLiveSpeed(s)}
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+                    liveSpeed === s ? 'bg-red-500 text-white border-red-500' : 'border-border text-text-muted hover:text-white'
+                  }`}
+                >
+                  {s}x
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="pr-4 border-r border-border font-mono">
             <div className="text-[10px] text-text-dim uppercase tracking-wider">Simulated Capital</div>
             <div className="text-lg font-black text-white">₹{portfolio.totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
@@ -525,7 +595,7 @@ export default function Practice() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search stock or fund (e.g. HDFC Bank, Reliance, Zomato)..."
+            placeholder="Search stock or fund (e.g. Zomato, Tata Motors)..."
             className="w-full bg-void border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder:text-text-dim focus:border-red-500 focus:outline-none"
           />
         </div>
@@ -577,10 +647,10 @@ export default function Practice() {
         ))}
       </div>
 
-      {/* ── Main Trading Grid ── */}
+      {/* ── Main Trading Grid (TradingView Canvas + Order Execution / Doubt Copilot) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* ── LEFT: Multi-Timeframe Chart Terminal (8 Cols) ── */}
+        {/* ── LEFT: Official TradingView Canvas Terminal (8 Cols) ── */}
         <div className="lg:col-span-8 card rounded-2xl border border-border bg-surface p-5 flex flex-col justify-between shadow-2xl space-y-4">
           
           {/* Top Asset & Timeframe Header */}
@@ -593,8 +663,16 @@ export default function Practice() {
                   {selectedAsset.change ? `${selectedAsset.change >= 0 ? '+' : ''}${selectedAsset.change}%` : 'NAV Quote'}
                 </span>
               </div>
-              <div className="text-2xl font-black font-mono text-white mt-1">
-                ₹{currentPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`text-2xl font-black font-mono transition-colors duration-200 ${
+                  livePriceFlash === 'up' ? 'text-emerald-400 bg-emerald-500/20 px-1 rounded' :
+                  livePriceFlash === 'down' ? 'text-red-400 bg-red-500/20 px-1 rounded' : 'text-white'
+                }`}>
+                  ₹{currentPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </span>
+                <span className="text-xs font-mono text-emerald-400 flex items-center gap-1 font-bold animate-pulse">
+                  ● LIVE TICKING
+                </span>
               </div>
             </div>
 
@@ -635,7 +713,7 @@ export default function Practice() {
                       chartType === 'line' ? 'bg-white text-black' : 'text-text-muted hover:text-white'
                     }`}
                   >
-                    Line
+                    Area Line
                   </button>
                 </div>
               </div>
@@ -663,294 +741,83 @@ export default function Practice() {
                 <span className="flex items-center gap-1 text-red-400 font-bold">
                   <span className="w-2.5 h-2.5 bg-red-500 rounded-sm inline-block" /> 🔴 Red (Down)
                 </span>
-                <span className="flex items-center gap-1 text-cyan-400 font-bold">
+                <button onClick={() => setShowEma(!showEma)} className="flex items-center gap-1 text-cyan-400 font-bold hover:underline">
                   <span className="w-2.5 h-0.5 bg-cyan-400 inline-block" /> 20 EMA
-                </span>
-                <span className="flex items-center gap-1 text-amber-400 font-bold">
+                </button>
+                <button onClick={() => setShowEma(!showEma)} className="flex items-center gap-1 text-amber-400 font-bold hover:underline">
                   <span className="w-2.5 h-0.5 bg-amber-400 inline-block" /> 50 EMA
-                </span>
+                </button>
                 <span className="flex items-center gap-1 text-purple-400 font-bold">
                   <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" /> RSI: {Math.round(currentRsi)}
                 </span>
               </div>
               <span className="text-text-dim text-[10px] flex items-center gap-1">
-                ↔ Drag / Scroll horizontally
+                🔍 Mouse-wheel to Zoom · Drag to Pan
               </span>
             </div>
           )}
 
-          {/* ── Horizontally Scrollable Candlestick / Line Chart Viewport ── */}
-          {selectedAsset.type === 'stock' && visibleCandles.length > 0 ? (
+          {/* ── Official TradingView Canvas Engine Viewport ── */}
+          {selectedAsset.type === 'stock' && candlesData.length > 0 ? (
             
-            <div className="relative w-full bg-void rounded-xl border border-border p-3 overflow-hidden select-none space-y-2">
+            <div className="space-y-2">
               
-              {/* Permanent OHLCV Header Bar */}
-              <div className="flex flex-wrap items-center gap-3 md:gap-4 px-2 py-1 rounded-lg bg-surface/80 border border-border/60 font-mono text-xs text-text-secondary">
+              {/* Permanent / Crosshair OHLCV Header */}
+              <div className="flex flex-wrap items-center gap-3 md:gap-4 px-3 py-1.5 rounded-xl bg-void border border-border/80 font-mono text-xs text-text-secondary">
                 <span className="text-[11px] text-text-dim uppercase font-bold">
-                  {hoveredCandle ? `Period: ${hoveredCandle.time}` : `Latest: ${currentCandle?.time || 'Now'}`}
+                  {crosshairData ? `Hovered Bar` : `Active Tick`}
                 </span>
-                <div><span className="text-text-dim text-[11px]">O:</span> <strong className="text-white">₹{hoveredCandle ? hoveredCandle.open : currentCandle?.open}</strong></div>
-                <div><span className="text-text-dim text-[11px]">H:</span> <strong className="text-white">₹{hoveredCandle ? hoveredCandle.high : currentCandle?.high}</strong></div>
-                <div><span className="text-text-dim text-[11px]">L:</span> <strong className="text-white">₹{hoveredCandle ? hoveredCandle.low : currentCandle?.low}</strong></div>
+                <div><span className="text-text-dim text-[11px]">O:</span> <strong className="text-white">₹{crosshairData ? crosshairData.open : latestTick?.open}</strong></div>
+                <div><span className="text-text-dim text-[11px]">H:</span> <strong className="text-white">₹{crosshairData ? crosshairData.high : latestTick?.high}</strong></div>
+                <div><span className="text-text-dim text-[11px]">L:</span> <strong className="text-white">₹{crosshairData ? crosshairData.low : latestTick?.low}</strong></div>
                 <div>
                   <span className="text-text-dim text-[11px]">C:</span>{' '}
-                  <strong className={`font-bold ${(hoveredCandle || currentCandle)?.close >= (hoveredCandle || currentCandle)?.open ? 'text-emerald-400' : 'text-red-400'}`}>
-                    ₹{hoveredCandle ? hoveredCandle.close : currentCandle?.close}
+                  <strong className={`font-bold ${(crosshairData || latestTick)?.close >= (crosshairData || latestTick)?.open ? 'text-emerald-400' : 'text-red-400'}`}>
+                    ₹{crosshairData ? crosshairData.close : latestTick?.close}
                   </strong>
                 </div>
                 <div className="ml-auto">
                   <span className="text-text-dim text-[11px]">Vol:</span>{' '}
-                  <strong className={`${(hoveredCandle || currentCandle)?.close >= (hoveredCandle || currentCandle)?.open ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {(hoveredCandle || currentCandle)?.volume?.toLocaleString()}
+                  <strong className="text-emerald-400">
+                    {(latestTick?.volume || 45000).toLocaleString()}
                   </strong>
                 </div>
               </div>
 
-              {/* Scrollable Canvas Container */}
-              <div ref={chartScrollContainerRef} className="overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-void pb-2">
-                <svg width={chartWidth} height={chartHeight} className="bg-void/50 rounded-lg">
+              {/* Official TradingView Canvas Chart with Live Real-Time Ticking */}
+              <TradingViewChart
+                candles={candlesData}
+                chartType={chartType}
+                showEma={showEma}
+                openPosition={openPosition}
+                latestTick={latestTick}
+                onCrosshairMove={setCrosshairData}
+              />
+
+              {/* Dedicated Wilder's RSI (14) Panel */}
+              <div className="p-3 bg-void rounded-xl border border-border/80">
+                <div className="flex items-center justify-between text-[10px] font-mono text-text-dim mb-1">
+                  <span className="text-purple-400 font-bold">RSI (14) Momentum Oscillator</span>
+                  <span className="text-text-muted">Overbought: 70 · Oversold: 30 · Current: {Math.round(currentRsi)}</span>
+                </div>
+                <svg viewBox="0 0 700 70" className="w-full h-14 bg-surface/40 rounded-lg">
+                  <line x1="0" y1={getRsiY(70)} x2="700" y2={getRsiY(70)} stroke="#EF4444" strokeDasharray="2 2" strokeWidth="1" opacity="0.4" />
+                  <text x="670" y={getRsiY(70) + 3} fill="#EF4444" fontSize="8" fontFamily="monospace">70</text>
                   
-                  {/* Horizontal Grid Lines */}
-                  {[0.2, 0.4, 0.6, 0.8].map(ratio => {
-                    const y = chartHeight * ratio
-                    const priceAtY = maxPrice - ratio * priceRange
-                    return (
-                      <g key={ratio}>
-                        <line x1="0" y1={y} x2={chartWidth} y2={y} stroke="#181818" strokeDasharray="3 3" />
-                        <text x={chartWidth - 55} y={y - 4} fill="#444" fontSize="9" fontFamily="monospace">
-                          ₹{priceAtY.toFixed(1)}
-                        </text>
-                      </g>
-                    )
-                  })}
+                  <line x1="0" y1={getRsiY(30)} x2="700" y2={getRsiY(30)} stroke="#10B981" strokeDasharray="2 2" strokeWidth="1" opacity="0.4" />
+                  <text x="670" y={getRsiY(30) + 3} fill="#10B981" fontSize="8" fontFamily="monospace">30</text>
 
-                  {/* Current Live Price Dashed Line & Badge on Axis */}
-                  <line
-                    x1="0"
-                    y1={getY(currentPrice)}
-                    x2={chartWidth - 65}
-                    y2={getY(currentPrice)}
-                    stroke={isPositiveDay ? '#22C55E' : '#EF4444'}
-                    strokeWidth="1.2"
-                    strokeDasharray="3 3"
-                    opacity="0.85"
-                  />
-                  <rect
-                    x={chartWidth - 65}
-                    y={getY(currentPrice) - 9}
-                    width="62"
-                    height="18"
-                    fill={isPositiveDay ? '#22C55E' : '#EF4444'}
-                    rx="3"
-                  />
-                  <text
-                    x={chartWidth - 34}
-                    y={getY(currentPrice) + 3.5}
-                    fill="#FFFFFF"
-                    fontSize="9.5"
-                    fontFamily="monospace"
-                    fontWeight="bold"
-                    textAnchor="middle"
-                  >
-                    ₹{currentPrice.toFixed(1)}
-                  </text>
-
-                  {/* Open Position Lines */}
-                  {openPosition && (
-                    <>
-                      <line x1="0" y1={getY(openPosition.entryPrice)} x2={chartWidth} y2={getY(openPosition.entryPrice)} stroke="#FFFFFF" strokeWidth="1.5" strokeDasharray="4 4" />
-                      <text x="10" y={getY(openPosition.entryPrice) - 4} fill="#FFF" fontSize="9" fontFamily="monospace" fontWeight="bold">
-                        Entry @ ₹{openPosition.entryPrice}
-                      </text>
-                      <line x1="0" y1={getY(openPosition.stopLoss)} x2={chartWidth} y2={getY(openPosition.stopLoss)} stroke="#EF4444" strokeWidth="1.5" strokeDasharray="3 3" />
-                      <text x="10" y={getY(openPosition.stopLoss) - 4} fill="#EF4444" fontSize="9" fontFamily="monospace">
-                        SL @ ₹{openPosition.stopLoss}
-                      </text>
-                    </>
-                  )}
-
-                  {/* 20 EMA Line (Cyan) */}
                   <path
-                    d={visibleCandles.map((_, i) => {
-                      const x = 25 + i * candleColWidth + candleColWidth / 2
-                      const y = getY(ema20[i])
+                    d={candlesData.map((_, i) => {
+                      const x = 10 + i * ((700 - 40) / Math.max(1, candlesData.length - 1))
+                      const y = getRsiY(rsiValues[i] || 50)
                       return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
                     }).join(' ')}
                     fill="none"
-                    stroke="#22D3EE"
-                    strokeWidth="1.5"
-                    opacity="0.85"
+                    stroke="#C084FC"
+                    strokeWidth="1.8"
                   />
-
-                  {/* 50 EMA Line (Amber) */}
-                  <path
-                    d={visibleCandles.map((_, i) => {
-                      const x = 25 + i * candleColWidth + candleColWidth / 2
-                      const y = getY(ema50[i])
-                      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
-                    }).join(' ')}
-                    fill="none"
-                    stroke="#F59E0B"
-                    strokeWidth="1.5"
-                    opacity="0.85"
-                  />
-
-                  {/* Chart Style: Dynamic Up/Down Line Chart Mode */}
-                  {chartType === 'line' ? (
-                    <>
-                      <path
-                        d={`M 25 ${chartHeight - 20} ` + visibleCandles.map((c, i) => {
-                          const x = 25 + i * candleColWidth + candleColWidth / 2
-                          return `L ${x} ${getY(c.close)}`
-                        }).join(' ') + ` L ${25 + (visibleCandles.length - 1) * candleColWidth + candleColWidth / 2} ${chartHeight - 20} Z`}
-                        fill={isPositiveDay ? 'rgba(34, 197, 94, 0.08)' : 'rgba(239, 68, 68, 0.08)'}
-                      />
-                      {visibleCandles.map((c, i) => {
-                        if (i === 0) return null
-                        const prev = visibleCandles[i - 1]
-                        const isUp = c.close >= prev.close
-                        const x1 = 25 + (i - 1) * candleColWidth + candleColWidth / 2
-                        const y1 = getY(prev.close)
-                        const x2 = 25 + i * candleColWidth + candleColWidth / 2
-                        const y2 = getY(c.close)
-                        return (
-                          <line
-                            key={i}
-                            x1={x1}
-                            y1={y1}
-                            x2={x2}
-                            y2={y2}
-                            stroke={isUp ? '#22C55E' : '#EF4444'}
-                            strokeWidth="2.2"
-                          />
-                        )
-                      })}
-                    </>
-                  ) : (
-                    
-                    /* Chart Style: Real Japanese Green & Red Candlestick Mode */
-                    visibleCandles.map((c, i) => {
-                      const candleWidth = Math.max(8, candleColWidth - 6)
-                      const x = 25 + i * candleColWidth
-                      const isGreen = c.close >= c.open
-                      const candleColor = isGreen ? '#22C55E' : '#EF4444'
-                      const bodyTop = getY(Math.max(c.open, c.close))
-                      const bodyBottom = getY(Math.min(c.open, c.close))
-                      const bodyHeight = Math.max(3, bodyBottom - bodyTop)
-                      const isHovered = hoveredCandle && hoveredCandle.time === c.time && hoveredCandle.open === c.open
-
-                      // Bottom Volume Bar height
-                      const maxVol = Math.max(...visibleCandles.map(v => v.volume || 10000))
-                      const volHeight = Math.min(35, ((c.volume || 10000) / maxVol) * 35)
-
-                      return (
-                        <g
-                          key={i}
-                          onMouseEnter={() => setHoveredCandle(c)}
-                          onMouseLeave={() => setHoveredCandle(null)}
-                          className="cursor-pointer"
-                        >
-                          {/* Column Hit-Zone */}
-                          <rect
-                            x={x - 2}
-                            y={0}
-                            width={candleColWidth}
-                            height={chartHeight}
-                            fill={isHovered ? (isGreen ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)') : 'transparent'}
-                          />
-
-                          {/* Hover Crosshair Guide */}
-                          {isHovered && (
-                            <line
-                              x1={x + candleWidth / 2}
-                              y1={0}
-                              x2={x + candleWidth / 2}
-                              y2={chartHeight}
-                              stroke={candleColor}
-                              strokeWidth="1"
-                              strokeDasharray="2 2"
-                              opacity="0.6"
-                            />
-                          )}
-
-                          {/* Top & Bottom Wicks */}
-                          <line
-                            x1={x + candleWidth / 2}
-                            y1={getY(c.high)}
-                            x2={x + candleWidth / 2}
-                            y2={getY(c.low)}
-                            stroke={candleColor}
-                            strokeWidth="1.4"
-                          />
-                          
-                          {/* Real Body (Green for Up, Red for Down) */}
-                          <rect
-                            x={x}
-                            y={bodyTop}
-                            width={candleWidth}
-                            height={bodyHeight}
-                            fill={candleColor}
-                            stroke={candleColor}
-                            rx="1"
-                          />
-
-                          {/* Bottom Volume Bar */}
-                          <rect
-                            x={x}
-                            y={chartHeight - 16 - volHeight}
-                            width={candleWidth}
-                            height={volHeight}
-                            fill={candleColor}
-                            opacity="0.35"
-                            rx="0.5"
-                          />
-
-                          {/* Period Date/Time Label */}
-                          {i % Math.max(1, Math.floor(visibleCandles.length / 9)) === 0 && (
-                            <text
-                              x={x + candleWidth / 2}
-                              y={chartHeight - 3}
-                              fill="#666"
-                              fontSize="8"
-                              textAnchor="middle"
-                              fontFamily="monospace"
-                            >
-                              {c.time}
-                            </text>
-                          )}
-                        </g>
-                      )
-                    })
-                  )}
                 </svg>
-              </div>
-
-              {/* Dedicated RSI Panel */}
-              <div className="pt-2 border-t border-border/80">
-                <div className="flex items-center justify-between text-[10px] font-mono text-text-dim px-2 mb-1">
-                  <span className="text-purple-400 font-bold">RSI (14) Indicator · {selectedTimeframe}</span>
-                  <span className="text-text-muted">Overbought: 70 · Oversold: 30</span>
-                </div>
-                <div className="overflow-x-auto scrollbar-none">
-                  <svg width={chartWidth} height={rsiHeight} className="bg-void/50 rounded-lg">
-                    <line x1="0" y1={getRsiY(70)} x2={chartWidth} y2={getRsiY(70)} stroke="#EF4444" strokeDasharray="2 2" strokeWidth="1" opacity="0.4" />
-                    <text x={chartWidth - 25} y={getRsiY(70) + 3} fill="#EF4444" fontSize="8" fontFamily="monospace">70</text>
-                    
-                    <line x1="0" y1={getRsiY(30)} x2={chartWidth} y2={getRsiY(30)} stroke="#10B981" strokeDasharray="2 2" strokeWidth="1" opacity="0.4" />
-                    <text x={chartWidth - 25} y={getRsiY(30) + 3} fill="#10B981" fontSize="8" fontFamily="monospace">30</text>
-
-                    <path
-                      d={visibleCandles.map((_, i) => {
-                        const x = 25 + i * candleColWidth + candleColWidth / 2
-                        const y = getRsiY(rsiValues[i] || 50)
-                        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
-                      }).join(' ')}
-                      fill="none"
-                      stroke="#C084FC"
-                      strokeWidth="1.8"
-                    />
-                  </svg>
-                </div>
               </div>
 
             </div>
@@ -1017,10 +884,30 @@ export default function Practice() {
               
               /* ── Stock Order Execution Pad ── */
               <div className="space-y-4">
+                
+                {/* Instant Order Fill Alert Toast */}
+                <AnimatePresence>
+                  {orderToast && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="p-3.5 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-xs font-mono text-emerald-300 flex items-center gap-2 shadow-lg"
+                    >
+                      <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                      <div>
+                        <strong>Order Filled!</strong> {orderToast.direction === 'BUY' ? 'BOUGHT' : 'SHORTED'} {orderToast.qty} Qty {orderToast.symbol} @ ₹{orderToast.price.toFixed(2)}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="card rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-xl">
                   <div className="flex items-center justify-between border-b border-border pb-3">
-                    <span className="text-xs font-mono font-bold uppercase tracking-widest text-white">Order Execution</span>
-                    <span className="text-xs font-mono text-red-400 font-bold">Paper Trading</span>
+                    <span className="text-xs font-mono font-bold uppercase tracking-widest text-white">Live Order Pad</span>
+                    <span className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1">
+                      <Flame size={12} /> Paper Trading (₹15,000 Wallet)
+                    </span>
                   </div>
 
                   {/* Quantity */}
@@ -1082,22 +969,22 @@ export default function Practice() {
                   </div>
                 </div>
 
-                {/* Active Position Live PnL Box */}
+                {/* Active Position Live Real-Time PnL Box */}
                 {openPosition && (
                   <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="card rounded-2xl border border-red-500/50 bg-void p-5 space-y-3">
                     <div className="flex items-center justify-between text-xs font-mono">
                       <span className="font-extrabold text-white flex items-center gap-1.5">
-                        <Activity size={14} className="text-red-500 animate-pulse" /> LIVE POSITION
+                        <Activity size={14} className="text-emerald-400 animate-pulse" /> LIVE POSITION
                       </span>
                       <span className={`font-bold px-2 py-0.5 rounded border ${openPosition.direction === 'BUY' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-red-500/20 text-red-300 border-red-500/40'}`}>
-                        {openPosition.direction} {openPosition.quantity} QTY
+                        {openPosition.direction} {openPosition.quantity} QTY @ ₹{openPosition.entryPrice.toFixed(2)}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between py-2 border-y border-border font-mono">
                       <span className="text-xs text-text-muted">Unrealized PnL:</span>
-                      <span className={`text-base font-black ${livePnL >= 0 ? 'text-emerald-400 font-extrabold' : 'text-red-400'}`}>
-                        {livePnL >= 0 ? '+' : ''}₹{livePnL.toFixed(1)}
+                      <span className={`text-base font-black transition-all ${livePnL >= 0 ? 'text-emerald-400 font-extrabold' : 'text-red-400 font-extrabold'}`}>
+                        {livePnL >= 0 ? '+' : ''}₹{livePnL.toFixed(2)} ({livePnLPct >= 0 ? '+' : ''}{livePnLPct.toFixed(2)}%)
                       </span>
                     </div>
 
@@ -1105,8 +992,23 @@ export default function Practice() {
                       onClick={() => closePosition(currentPrice, 'Manual Market Exit')}
                       className="w-full py-2.5 rounded-xl border border-red-500/40 text-xs font-mono font-bold text-red-400 hover:bg-red-500/20 transition-colors"
                     >
-                      Market Close Position @ ₹{currentPrice}
+                      Market Close Position @ ₹{currentPrice.toFixed(2)}
                     </button>
+                  </motion.div>
+                )}
+
+                {/* Completed Trade Outcome Banner */}
+                {tradeOutcome && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 rounded-xl bg-surface border border-border space-y-1 font-mono text-xs">
+                    <div className="flex justify-between font-bold">
+                      <span className="text-white">Trade Result: {tradeOutcome.reason}</span>
+                      <span className={tradeOutcome.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                        {tradeOutcome.pnl >= 0 ? '+' : ''}₹{tradeOutcome.pnl.toFixed(2)}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-text-dim">
+                      Entry @ ₹{tradeOutcome.entryPrice.toFixed(2)} $\rightarrow$ Exit @ ₹{tradeOutcome.exitPrice.toFixed(2)} ({tradeOutcome.quantity} Shares)
+                    </p>
                   </motion.div>
                 )}
               </div>
@@ -1188,7 +1090,7 @@ export default function Practice() {
           ) : (
             
             /* ── Interactive AI Doubt Solver ── */
-            <div className="card rounded-2xl border border-border bg-surface flex flex-col h-[520px] overflow-hidden shadow-2xl">
+            <div className="card rounded-2xl border border-border bg-surface flex flex-col h-[540px] overflow-hidden shadow-2xl">
               
               <div className="p-4 border-b border-border bg-void flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
@@ -1204,10 +1106,10 @@ export default function Practice() {
               {/* Quick Doubts */}
               <div className="p-2 border-b border-border bg-void/50 flex gap-1.5 overflow-x-auto scrollbar-none shrink-0">
                 {[
-                  `Why are candles Green and Red`,
+                  `How does real 9:15-3:30 market trading work`,
                   `How to profit from falling ${selectedAsset.symbol}`,
-                  'What is 20 EMA and 50 EMA',
-                  'What is RSI overbought vs oversold'
+                  'Why are candles Green and Red',
+                  'What is 20 EMA and 50 EMA'
                 ].map(q => (
                   <button
                     key={q}
@@ -1250,7 +1152,7 @@ export default function Practice() {
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="bg-void border border-border p-2.5 rounded-xl text-xs text-text-dim font-mono animate-pulse">
-                      Analyzing {selectedAsset.symbol} chart...
+                      Analyzing {selectedAsset.symbol} live order book...
                     </div>
                   </div>
                 )}

@@ -45,7 +45,7 @@ export default function LabDashboard() {
 
       <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 flex gap-3 text-sm text-text-secondary">
         <AlertTriangle className="text-red-400 shrink-0" size={18} />
-        <p><span className="font-bold text-white">Data status: </span>{loading ? 'Checking backend availability…' : status?.data_source === 'unavailable' ? 'No approved historical or live market-data provider is connected.' : 'Unknown.'} Academy simulation data is not used as Lab research evidence.</p>
+        <p><span className="font-bold text-white">Data status: </span>{loading ? 'Checking backend availability…' : status?.data_source === 'local-csv-only' ? 'Local historical CSV imports are supported; no approved provider or live feed is connected.' : 'Unknown.'} Academy simulation data is not used as Lab research evidence.</p>
       </div>
 
       <section>

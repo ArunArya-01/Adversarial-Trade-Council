@@ -48,6 +48,20 @@ npm install && npm run dev
 
 API docs available at: `http://localhost:8000/docs`. Canonical routes use `/api/academy/*` and `/api/lab/status`; legacy Academy routes remain temporarily available.
 
+### Investment Lab historical CSV import
+
+The Lab currently supports only local, explicitly historical OHLCV CSV imports:
+
+```text
+POST /api/lab/datasets/import
+multipart fields: file=<dataset.csv>, source=<licensed provider or local export>
+```
+
+Required columns are `instrument, exchange, timestamp, timezone, frequency,
+open, high, low, close, volume`. Imports are validated, content-hashed, and
+stored separately as raw, cleaned, and derived-feature artifacts. No live feed,
+broker connection, prediction, or strategy performance is provided.
+
 ---
 
 ## Tech Stack

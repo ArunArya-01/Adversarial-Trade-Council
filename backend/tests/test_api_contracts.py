@@ -45,7 +45,7 @@ class ModuleApiContractTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertEqual(payload["module"], "ai-investment-lab")
-        self.assertEqual(payload["data_source"], "unavailable")
+        self.assertEqual(payload["data_source"], "local-csv-only")
         self.assertGreater(len(payload["capabilities"]), 0)
 
 

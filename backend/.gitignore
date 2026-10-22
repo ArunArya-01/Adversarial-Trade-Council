@@ -28,3 +28,9 @@ venv/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# ── Investment Lab data artifacts ────────────────────────────────────────────
+data/lab/raw/
+data/lab/clean/
+data/lab/features/
+data/lab/metadata/
