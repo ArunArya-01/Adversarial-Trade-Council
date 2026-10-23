@@ -7,12 +7,15 @@ Those services arrive only after their respective validated implementation phase
 from datetime import datetime, timezone
 from typing import Literal, Optional
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
+from database.db import get_db
 from services.lab.backtesting import BacktestConfig, BacktestValidationError, run_backtest_comparison
 from services.lab.data_pipeline import DatasetValidationError, LocalDatasetStore
 from services.lab.market_data import GrowwMarketDataAdapter
+from services.lab.paper_trading import PaperTradeSignal, PaperTradingError, create_portfolio, execute_signal, portfolio_report
 
 router = APIRouter(prefix="/lab", tags=["AI Investment Lab"])
 
@@ -39,8 +42,8 @@ CAPABILITIES = [
     CapabilityStatus(id="strategies", label="Strategy Lab", status="available", message="Transparent buy-and-hold, moving-average crossover, and momentum baselines are available through the historical backtest API."),
     CapabilityStatus(id="backtesting", label="Backtesting", status="available", message="Historical backtests apply documented fees, slippage, next-bar execution, and volume participation limits."),
     CapabilityStatus(id="ml", label="ML Experiments", status="planned", message="Training is reserved for the Colab research phase."),
-    CapabilityStatus(id="paper-trading", label="Paper Trading", status="planned", message="A separate Lab portfolio is not active yet."),
-    CapabilityStatus(id="risk", label="Risk Analytics", status="planned", message="Risk analytics depend on validated data and portfolio services."),
+    CapabilityStatus(id="paper-trading", label="Paper Trading", status="available", message="Separate auditable virtual portfolios support historical or simulated data only; no broker orders are sent."),
+    CapabilityStatus(id="risk", label="Risk Analytics", status="available", message="Paper portfolios enforce cash, exposure, concentration, duplicate-signal, and maximum-drawdown safeguards."),
 ]
 
 
@@ -123,3 +126,79 @@ def run_historical_backtest(request: BacktestRequest):
         "notice": "Historical simulation only. It does not predict returns or guarantee future performance.",
         **result,
     }
+
+
+class PaperPortfolioRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    starting_capital: float = Field(gt=0)
+    benchmark_symbol: Optional[str] = Field(default=None, max_length=40)
+    fee_bps: float = Field(default=10, ge=0)
+    slippage_bps: float = Field(default=5, ge=0)
+    max_position_fraction: float = Field(default=0.25, gt=0, le=1)
+    max_total_exposure_fraction: float = Field(default=0.80, gt=0, le=1)
+    max_drawdown_fraction: float = Field(default=0.20, gt=0, lt=1)
+
+
+class PaperSignalRequest(BaseModel):
+    signal_id: str = Field(min_length=1, max_length=120)
+    side: Literal["BUY", "SELL"]
+    symbol: str = Field(min_length=1, max_length=40)
+    quantity: int = Field(gt=0)
+    observed_price: float = Field(gt=0)
+    observed_at: datetime
+    source: str = Field(min_length=1, max_length=160)
+    data_kind: Literal["historical", "simulated"]
+    strategy_version: str = Field(min_length=1, max_length=120)
+    model_version: Optional[str] = Field(default=None, max_length=120)
+    benchmark_price: Optional[float] = Field(default=None, gt=0)
+
+
+def _paper_error(error: PaperTradingError) -> HTTPException:
+    return HTTPException(status_code=422, detail=str(error))
+
+
+@router.post("/paper-portfolios", status_code=status.HTTP_201_CREATED)
+def create_paper_portfolio(request: PaperPortfolioRequest, db: Session = Depends(get_db)):
+    """Create a virtual Lab portfolio. This is not a brokerage account."""
+    try:
+        portfolio = create_portfolio(db, **request.model_dump())
+        return portfolio_report(db, portfolio.id)
+    except PaperTradingError as error:
+        raise _paper_error(error) from error
+
+
+@router.get("/paper-portfolios/{portfolio_id}")
+def get_paper_portfolio(portfolio_id: str, db: Session = Depends(get_db)):
+    try:
+        return portfolio_report(db, portfolio_id)
+    except PaperTradingError as error:
+        raise _paper_error(error) from error
+
+
+@router.get("/paper-portfolios/{portfolio_id}/trades.csv")
+def export_paper_trades(portfolio_id: str, db: Session = Depends(get_db)):
+    import csv
+    import io
+    from fastapi.responses import StreamingResponse
+
+    try:
+        report = portfolio_report(db, portfolio_id)
+    except PaperTradingError as error:
+        raise _paper_error(error) from error
+    output = io.StringIO()
+    rows = report["trades"]
+    fieldnames = list(rows[0].keys()) if rows else ["id", "signal_id", "side", "symbol", "quantity", "observed_price", "execution_price", "fee", "realized_pnl", "source", "data_kind", "strategy_version", "model_version", "observed_at"]
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(rows)
+    return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers={"Content-Disposition": f'attachment; filename="paper-trades-{portfolio_id}.csv"'})
+
+
+@router.post("/paper-portfolios/{portfolio_id}/signals", status_code=status.HTTP_201_CREATED)
+def apply_paper_signal(portfolio_id: str, request: PaperSignalRequest, db: Session = Depends(get_db)):
+    """Execute a simulated trade against supplied historical/simulated observation data."""
+    try:
+        trade = execute_signal(db, portfolio_id, PaperTradeSignal(**request.model_dump()))
+        return {"simulation": True, "notice": "Simulated fill only; no broker order was placed.", "trade_id": trade.id, "portfolio": portfolio_report(db, portfolio_id)}
+    except PaperTradingError as error:
+        raise _paper_error(error) from error
