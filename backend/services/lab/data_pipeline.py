@@ -232,6 +232,15 @@ class LocalDatasetStore:
             datasets.append(json.loads(path.read_text(encoding="utf-8")))
         return datasets
 
+    def get_metadata(self, dataset_id: str) -> dict[str, Any]:
+        """Return immutable provenance metadata for a validated historical import."""
+        if not dataset_id or any(char not in "0123456789abcdef" for char in dataset_id) or len(dataset_id) != 16:
+            raise DatasetValidationError("invalid dataset identifier")
+        path = self.metadata_dir / f"{dataset_id}.json"
+        if not path.exists():
+            raise DatasetValidationError("dataset not found")
+        return json.loads(path.read_text(encoding="utf-8"))
+
     def load_clean_bars(self, dataset_id: str) -> list[MarketBar]:
         """Load a validated historical dataset without re-reading untrusted CSV."""
         if not dataset_id or any(char not in "0123456789abcdef" for char in dataset_id) or len(dataset_id) != 16:

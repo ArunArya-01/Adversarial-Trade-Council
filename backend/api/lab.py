@@ -16,6 +16,7 @@ from services.lab.backtesting import BacktestConfig, BacktestValidationError, ru
 from services.lab.data_pipeline import DatasetValidationError, LocalDatasetStore
 from services.lab.market_data import GrowwMarketDataAdapter
 from services.lab.paper_trading import PaperTradeSignal, PaperTradingError, create_portfolio, execute_signal, portfolio_report
+from services.lab.research import ResearchError, build_report
 
 router = APIRouter(prefix="/lab", tags=["AI Investment Lab"])
 
@@ -153,6 +154,13 @@ class PaperSignalRequest(BaseModel):
     benchmark_price: Optional[float] = Field(default=None, gt=0)
 
 
+class ResearchReportRequest(BaseModel):
+    portfolio_id: str
+    dataset_id: Optional[str] = None
+    candidate_symbol: Optional[str] = Field(default=None, max_length=40)
+    question: Optional[str] = Field(default=None, max_length=500)
+
+
 def _paper_error(error: PaperTradingError) -> HTTPException:
     return HTTPException(status_code=422, detail=str(error))
 
@@ -202,3 +210,14 @@ def apply_paper_signal(portfolio_id: str, request: PaperSignalRequest, db: Sessi
         return {"simulation": True, "notice": "Simulated fill only; no broker order was placed.", "trade_id": trade.id, "portfolio": portfolio_report(db, portfolio_id)}
     except PaperTradingError as error:
         raise _paper_error(error) from error
+
+
+@router.post("/research/reports")
+def create_research_report(request: ResearchReportRequest, db: Session = Depends(get_db)):
+    """Explain only verified Lab records; never produces an order or a signal."""
+    try:
+        portfolio = portfolio_report(db, request.portfolio_id)
+        dataset = LocalDatasetStore().get_metadata(request.dataset_id) if request.dataset_id else None
+        return build_report(portfolio, dataset, request.candidate_symbol, request.question)
+    except (PaperTradingError, ResearchError, DatasetValidationError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
