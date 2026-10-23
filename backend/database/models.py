@@ -79,3 +79,22 @@ class PaperEquitySnapshot(Base):
     positions_value = Column(Float, nullable=False)
     equity = Column(Float, nullable=False)
     benchmark_equity = Column(Float, nullable=True)
+
+
+class LabWatchlist(Base):
+    __tablename__ = "lab_watchlists"
+
+    id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class LabWatchlistItem(Base):
+    __tablename__ = "lab_watchlist_items"
+
+    id = Column(Integer, primary_key=True)
+    watchlist_id = Column(String, index=True, nullable=False)
+    symbol = Column(String, nullable=False)
+    exchange = Column(String, nullable=False)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

@@ -17,6 +17,7 @@ from services.lab.data_pipeline import DatasetValidationError, LocalDatasetStore
 from services.lab.market_data import GrowwMarketDataAdapter
 from services.lab.paper_trading import PaperTradeSignal, PaperTradingError, create_portfolio, execute_signal, portfolio_report
 from services.lab.research import ResearchError, build_report
+from services.lab.watchlists import WatchlistError, add_item, create as create_watchlist, list_all
 
 router = APIRouter(prefix="/lab", tags=["AI Investment Lab"])
 
@@ -38,7 +39,7 @@ class LabStatus(BaseModel):
 
 CAPABILITIES = [
     CapabilityStatus(id="scanner", label="Stock Scanner", status="planned", message="Requires validated historical or live market data."),
-    CapabilityStatus(id="watchlists", label="Watchlists", status="planned", message="Watchlist persistence is scheduled for a later phase."),
+    CapabilityStatus(id="watchlists", label="Watchlists", status="available", message="Persistent research watchlists organize symbols and notes without inventing live prices or signals."),
     CapabilityStatus(id="market-data", label="Market Data", status="planned", message="Local historical CSV imports are supported; no approved provider or live feed is connected."),
     CapabilityStatus(id="strategies", label="Strategy Lab", status="available", message="Transparent buy-and-hold, moving-average crossover, and momentum baselines are available through the historical backtest API."),
     CapabilityStatus(id="backtesting", label="Backtesting", status="available", message="Historical backtests apply documented fees, slippage, next-bar execution, and volume participation limits."),
@@ -63,6 +64,37 @@ def lab_status():
 def market_data_status():
     """Return configuration state only; this endpoint never contacts Groww."""
     return GrowwMarketDataAdapter().status().to_dict()
+
+
+class WatchlistRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+
+
+class WatchlistItemRequest(BaseModel):
+    symbol: str = Field(min_length=1, max_length=40)
+    exchange: str = Field(min_length=1, max_length=20)
+    note: Optional[str] = Field(default=None, max_length=500)
+
+
+@router.get("/watchlists")
+def get_watchlists(db: Session = Depends(get_db)):
+    return list_all(db)
+
+
+@router.post("/watchlists", status_code=status.HTTP_201_CREATED)
+def post_watchlist(request: WatchlistRequest, db: Session = Depends(get_db)):
+    try:
+        return create_watchlist(db, request.name)
+    except WatchlistError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.post("/watchlists/{watchlist_id}/items", status_code=status.HTTP_201_CREATED)
+def post_watchlist_item(watchlist_id: str, request: WatchlistItemRequest, db: Session = Depends(get_db)):
+    try:
+        return add_item(db, watchlist_id, request.symbol, request.exchange, request.note)
+    except WatchlistError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 class DatasetSummary(BaseModel):
