@@ -48,6 +48,14 @@ class ModuleApiContractTests(unittest.TestCase):
         self.assertEqual(payload["data_source"], "local-csv-only")
         self.assertGreater(len(payload["capabilities"]), 0)
 
+    def test_groww_status_is_safe_when_not_configured(self):
+        response = self.client.get("/api/lab/market-data/status")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["provider"], "groww")
+        self.assertIn(payload["state"], {"disabled", "credentials_missing", "configured"})
+        self.assertEqual(payload["historical_candles"], "unverified")
+
 
 if __name__ == "__main__":
     unittest.main()

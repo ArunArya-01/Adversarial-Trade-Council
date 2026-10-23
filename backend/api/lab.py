@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from services.lab.backtesting import BacktestConfig, BacktestValidationError, run_backtest_comparison
 from services.lab.data_pipeline import DatasetValidationError, LocalDatasetStore
+from services.lab.market_data import GrowwMarketDataAdapter
 
 router = APIRouter(prefix="/lab", tags=["AI Investment Lab"])
 
@@ -52,6 +53,12 @@ def lab_status():
         capabilities=CAPABILITIES,
         notice="Local historical CSV import is available. This module does not provide live prices, investment signals, model results, or trading functionality.",
     )
+
+
+@router.get("/market-data/status")
+def market_data_status():
+    """Return configuration state only; this endpoint never contacts Groww."""
+    return GrowwMarketDataAdapter().status().to_dict()
 
 
 class DatasetSummary(BaseModel):

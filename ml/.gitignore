@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Generated or approved artifacts remain outside Git unless explicitly reviewed.
+artifacts/*
+!artifacts/README.md
+
+# Local research data and reports.
+data/
+reports/
