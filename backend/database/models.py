@@ -98,3 +98,30 @@ class LabWatchlistItem(Base):
     exchange = Column(String, nullable=False)
     note = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class ModelArtifactRecord(Base):
+    """Governance metadata only; model binaries remain outside the database."""
+    __tablename__ = "model_artifact_records"
+
+    model_version = Column(String, primary_key=True)
+    bundle_sha256 = Column(String, nullable=False, unique=True)
+    prepared_data_sha256 = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="candidate")
+    approved_by = Column(String, nullable=True)
+    approval_reason = Column(Text, nullable=True)
+    approved_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class ModelGovernanceEvent(Base):
+    __tablename__ = "model_governance_events"
+
+    id = Column(Integer, primary_key=True)
+    model_version = Column(String, index=True, nullable=False)
+    event_type = Column(String, nullable=False)
+    actor = Column(String, nullable=False)
+    reason = Column(Text, nullable=False)
+    details = Column(JSON, default=dict, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
