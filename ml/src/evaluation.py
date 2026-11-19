@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Iterable
 
 
 @dataclass(frozen=True)
@@ -11,6 +12,24 @@ class ChronologicalSplit:
     validation_start: int
     validation_end: int
     test_start: int
+
+
+@dataclass(frozen=True)
+class TimestampSplit:
+    """Non-overlapping timestamp groups for a multi-instrument research panel."""
+
+    train_timestamps: tuple[str, ...]
+    validation_timestamps: tuple[str, ...]
+    test_timestamps: tuple[str, ...]
+    embargo_sessions: int
+
+    def report(self) -> dict:
+        return {
+            "train": {"rows_are_selected_by": "timestamp", "count": len(self.train_timestamps), "first": self.train_timestamps[0], "last": self.train_timestamps[-1]},
+            "validation": {"rows_are_selected_by": "timestamp", "count": len(self.validation_timestamps), "first": self.validation_timestamps[0], "last": self.validation_timestamps[-1]},
+            "test": {"rows_are_selected_by": "timestamp", "count": len(self.test_timestamps), "first": self.test_timestamps[0], "last": self.test_timestamps[-1], "state": "sealed_not_scored"},
+            "embargo_sessions": self.embargo_sessions,
+        }
 
 
 def purged_train_validation_test_split(row_count: int, horizon: int = 5, train_fraction: float = 0.60, validation_fraction: float = 0.20) -> ChronologicalSplit:
@@ -26,6 +45,18 @@ def purged_train_validation_test_split(row_count: int, horizon: int = 5, train_f
     if test_start >= row_count:
         raise ValueError("insufficient test period after embargo")
     return ChronologicalSplit(train_end, validation_start, validation_end, test_start)
+
+
+def purged_timestamp_split(timestamps: Iterable[str], horizon: int = 5, train_fraction: float = 0.60, validation_fraction: float = 0.20) -> TimestampSplit:
+    """Split a panel by distinct ordered sessions, never arbitrary row counts."""
+    ordered = tuple(sorted(set(timestamps)))
+    boundaries = purged_train_validation_test_split(len(ordered), horizon, train_fraction, validation_fraction)
+    train = ordered[:boundaries.train_end]
+    validation = ordered[boundaries.validation_start:boundaries.validation_end]
+    test = ordered[boundaries.test_start:]
+    if not train or not validation or not test:
+        raise ValueError("insufficient timestamp groups for purged chronological evaluation")
+    return TimestampSplit(train, validation, test, horizon)
 
 
 def evaluate_classifier(y_true, probability):

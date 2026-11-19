@@ -28,6 +28,16 @@ execute no earlier than the next executable bar.
    the held-out evaluation and calibration have been reviewed.
 5. Export only the approved artifact bundle described in `artifacts/README.md`.
 
+## Phase 20 baseline protocol
+
+Run `ml/scripts/run_baseline_experiment.py` in Colab after installing the
+notebook's `pandas`, `numpy`, and `scikit-learn` dependencies. It verifies the
+Phase 19 file hash, splits by **distinct timestamps** (so all stocks on a
+session stay together), applies a five-session embargo, fits a dummy-prior and
+predeclared logistic-regression baseline on training data, and reports only
+validation metrics. The final test partition is deliberately allocated but not
+scored, exported, or used to choose a model.
+
 ## Leakage controls
 
 - All splits are chronological.

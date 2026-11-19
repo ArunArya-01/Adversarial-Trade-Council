@@ -38,7 +38,7 @@ pipelines. It is not a live brokerage product.
 | 17 | Historical data quality audit | **Complete.** Report sessions, duplicates, OHLC errors, anomalies, corporate actions, and benchmark alignment. |
 | 18 | Multi-asset historical universe | **Complete.** Audited locally imported NSE equities can be scanned at one exact shared historical close. The downloaded current NIFTY 50 list is explicitly coverage-only, not a reconstruction of historical index membership. |
 | 19 | Complete Colab preparation | **Complete.** Build a hash-recorded, no-imputation prepared CSV/manifest from Phase 17-audited NSE data; labels require matched stock/benchmark five-session horizons. No model is trained in this phase. |
-| 20 | Baseline ML experiment | Purged chronological splits; dummy/logistic baselines; sealed test set; recorded calibration/metrics. |
+| 20 | Baseline ML experiment | **Implementation complete; Colab execution pending.** Hash-verified prepared data uses timestamp-grouped purged splits, dummy-prior and logistic baselines, validation-only calibration/metrics, and a sealed unscored test partition. No artifact is exported or approved. |
 | 21 | Walk-forward ML evaluation | Multi-fold chronological evaluation, baseline comparisons, costs, and Trade Time Machine first implementation. |
 | 22 | Artifact approval/export | Reviewed bundle, data hashes, lockfile, parity test, and explicit approval state. |
 | 23 | FastAPI inference integration | Server-side validated artifact load; unavailable state without approved artifact. |
