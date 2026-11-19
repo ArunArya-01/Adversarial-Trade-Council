@@ -72,7 +72,8 @@ class NormalizationResult:
             "rejected_rows": [asdict(row) for row in self.rejected_rows],
             "first_timestamp": self.bars[0].timestamp if self.bars else None,
             "last_timestamp": self.bars[-1].timestamp if self.bars else None,
-            "instrument": self.bars[0].instrument if self.bars else None,
+            "instrument": self.bars[0].instrument if len({bar.instrument for bar in self.bars}) == 1 else None,
+            "instruments": sorted({bar.instrument for bar in self.bars}),
             "exchange": self.bars[0].exchange if self.bars else None,
         }
 

@@ -7,7 +7,7 @@ trading platform. It uses INR, documented NSE sessions, verified Indian data
 sources, explicit corporate-action handling, and provenance-preserving data
 pipelines. It is not a live brokerage product.
 
-## Completed foundation (Phases 1–15)
+## Completed foundation (Phases 1–16)
 
 - Separate Academy and Investment Lab modules.
 - Validated single-file historical CSV import, feature generation, provenance,
@@ -20,13 +20,17 @@ pipelines. It is not a live brokerage product.
 - Phase 15 raw NSE normalizer: 119 supported raw daily segments transformed
   into separate canonical JSONL segments/manifests; 11 unsupported NIFTY Total
   Return/constituent-list files are explicitly reported for later policy work.
+- Phase 16 registry stitcher: 55 canonical ticker-specific series generated
+  and bulk-imported with zero conflicting overlaps; 1,298 identical overlap
+  records and 98 potential calendar gaps are preserved for the Phase 17
+  quality audit. Four observed ticker transitions are split rather than merged.
 
 ## Pending original roadmap — preserve order
 
 | Phase | Scope | Dependency / acceptance summary |
 | --- | --- | --- |
 | 15 | Raw NSE data normalization | **Complete.** Convert preserved raw downloads reproducibly; normalize dates/numbers/schema, retain hashes and rejects. |
-| 16 | Dataset stitching and registry | Merge yearly segments, flag overlap/gaps, bulk-import canonical series with lineage. |
+| 16 | Dataset stitching and registry | **Complete.** Merge yearly segments, flag overlap/gaps, bulk-import canonical series with lineage. |
 | 17 | Historical data quality audit | Report sessions, duplicates, OHLC errors, anomalies, corporate actions, and benchmark alignment. |
 | 18 | Multi-asset historical universe | NIFTY 50 universe and historical multi-stock scanner; all output has a shared as-of timestamp. |
 | 19 | Complete Colab preparation | Build validated features/labels and prepared-data manifest from normalized data. |

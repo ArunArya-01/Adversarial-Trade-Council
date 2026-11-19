@@ -46,6 +46,12 @@ class NseNormalizationTests(unittest.TestCase):
             self.assertEqual(manifest["source_sha256"], first.source_sha256)
             self.assertEqual(manifest["rows_normalized"], 2)
 
+    def test_symbol_transition_in_one_raw_file_is_explicit_in_manifest(self):
+        changed = STOCK.replace(b'"RELIANCE","EQ","22-Oct-2024"', b'"NEWNAME","EQ","22-Oct-2024"')
+        result = normalize_bytes(changed)
+        self.assertIsNone(result.manifest()["instrument"])
+        self.assertEqual(result.manifest()["instruments"], ["NEWNAME", "RELIANCE"])
+
     def test_identical_downloads_keep_separate_source_lineage_outputs(self):
         with tempfile.TemporaryDirectory() as directory:
             root, output = Path(directory), Path(directory, "normalized")
