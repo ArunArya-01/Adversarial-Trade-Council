@@ -10,7 +10,7 @@ from typing import Mapping, Sequence
 REQUIRED_MANIFEST_FIELDS = {
     "model_version", "target_name", "horizon_sessions", "feature_schema_version",
     "feature_names", "training_date_range", "validation_metrics", "test_metrics",
-    "package_versions", "random_seed", "limitations",
+    "package_versions", "random_seed", "limitations", "prepared_file_sha256",
 }
 
 

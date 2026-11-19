@@ -8,11 +8,12 @@ model.joblib                 # selected model and preprocessing pipeline
 feature_schema.json          # required manifest and ordered feature names
 requirements-lock.txt        # exact Colab package versions
 evaluation-report.json       # validation/test metrics and split boundaries
+approval.json                # explicit human approval plus immutable hashes
 ```
 
 `feature_schema.json` must include `model_version`, target/horizon definition,
 ordered features, training date range, random seed, package versions,
-validation/test metrics, and limitations. The future backend loader must reject
+validation/test metrics, the Phase 19 prepared-data SHA-256, and limitations. `approval.json` must name a reviewer and reason, declare `approved`, and pin hashes for the model, evaluation report, and prepared data. The future backend loader must reject
 an artifact whose manifest fails `ml.src.inference.validate_manifest`.
 
 Before enabling backend inference, run the parity test with

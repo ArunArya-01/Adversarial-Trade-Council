@@ -40,7 +40,7 @@ pipelines. It is not a live brokerage product.
 | 19 | Complete Colab preparation | **Complete.** Build a hash-recorded, no-imputation prepared CSV/manifest from Phase 17-audited NSE data; labels require matched stock/benchmark five-session horizons. No model is trained in this phase. |
 | 20 | Baseline ML experiment | **Implementation complete; Colab execution pending.** Hash-verified prepared data uses timestamp-grouped purged splits, dummy-prior and logistic baselines, validation-only calibration/metrics, and a sealed unscored test partition. No artifact is exported or approved. |
 | 21 | Walk-forward ML evaluation | **Implementation in progress; execution blocked pending Phase 20 Colab report.** The first seeded daily Trade Time Machine is implemented with pre-entry regime sampling, costs, target/stop/neither outcomes, and actual-versus-simulated comparison. Multi-fold ML evaluation awaits the required real baseline report. |
-| 22 | Artifact approval/export | Reviewed bundle, data hashes, lockfile, parity test, and explicit approval state. |
+| 22 | Artifact approval/export | **Implementation in progress; no artifact can be approved yet.** The bundle validator requires a model/data/evaluation hash chain, dependency lockfile, completed walk-forward and out-of-sample evidence, and explicit human approval. |
 | 23 | FastAPI inference integration | Server-side validated artifact load; unavailable state without approved artifact. |
 | 24 | Model governance | Versioning, drift checks, audit logs, approval and rollback. |
 | 25 | Paper-trading strategy integration | Evidence-backed entry/exit plans, position sizing and deterministic risk decision before simulated fills. |

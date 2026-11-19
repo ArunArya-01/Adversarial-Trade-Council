@@ -16,6 +16,7 @@ VALID_MANIFEST = {
     "test_metrics": {},
     "package_versions": {},
     "random_seed": 42,
+    "prepared_file_sha256": "a" * 64,
     "limitations": ["untrained fixture"],
 }
 
