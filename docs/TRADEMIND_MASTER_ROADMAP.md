@@ -36,7 +36,7 @@ pipelines. It is not a live brokerage product.
 | 15 | Raw NSE data normalization | **Complete.** Convert preserved raw downloads reproducibly; normalize dates/numbers/schema, retain hashes and rejects. |
 | 16 | Dataset stitching and registry | **Complete.** Merge yearly segments, flag overlap/gaps, bulk-import canonical series with lineage. |
 | 17 | Historical data quality audit | **Complete.** Report sessions, duplicates, OHLC errors, anomalies, corporate actions, and benchmark alignment. |
-| 18 | Multi-asset historical universe | NIFTY 50 universe and historical multi-stock scanner; all output has a shared as-of timestamp. |
+| 18 | Multi-asset historical universe | **Complete.** Audited locally imported NSE equities can be scanned at one exact shared historical close. The downloaded current NIFTY 50 list is explicitly coverage-only, not a reconstruction of historical index membership. |
 | 19 | Complete Colab preparation | Build validated features/labels and prepared-data manifest from normalized data. |
 | 20 | Baseline ML experiment | Purged chronological splits; dummy/logistic baselines; sealed test set; recorded calibration/metrics. |
 | 21 | Walk-forward ML evaluation | Multi-fold chronological evaluation, baseline comparisons, costs, and Trade Time Machine first implementation. |

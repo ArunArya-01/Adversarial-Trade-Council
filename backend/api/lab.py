@@ -18,6 +18,7 @@ from services.lab.market_data import GrowwMarketDataAdapter
 from services.lab.paper_trading import PaperTradeSignal, PaperTradingError, create_portfolio, execute_signal, portfolio_report
 from services.lab.research import ResearchError, build_report
 from services.lab.scanner import ScannerError, scan_latest
+from services.lab.nse_universe import UniverseError, scan_current_nifty50_universe
 from services.lab.watchlists import WatchlistError, add_item, create as create_watchlist, list_all
 
 router = APIRouter(prefix="/lab", tags=["AI Investment Lab"])
@@ -39,7 +40,7 @@ class LabStatus(BaseModel):
 
 
 CAPABILITIES = [
-    CapabilityStatus(id="scanner", label="Stock Scanner", status="available", message="Transparent filters can scan the latest bar of one validated historical dataset; live scanning remains unavailable."),
+    CapabilityStatus(id="scanner", label="Stock Scanner", status="available", message="Transparent filters scan validated historical datasets individually or across the audited current-NIFTY-50 research coverage universe at one shared historical close; live scanning remains unavailable."),
     CapabilityStatus(id="watchlists", label="Watchlists", status="available", message="Persistent research watchlists organize symbols and notes without inventing live prices or signals."),
     CapabilityStatus(id="market-data", label="Market Data", status="planned", message="Local historical CSV imports are supported; no approved provider or live feed is connected."),
     CapabilityStatus(id="strategies", label="Strategy Lab", status="available", message="Transparent buy-and-hold, moving-average crossover, and momentum baselines are available through the historical backtest API."),
@@ -151,12 +152,27 @@ class HistoricalScanRequest(BaseModel):
     require_positive_momentum: bool = False
 
 
+class UniverseScanRequest(BaseModel):
+    as_of: str = Field(description="NSE daily close date (YYYY-MM-DD) or exact offset-aware historical timestamp")
+    minimum_rsi: Optional[float] = Field(default=None, ge=0, le=100)
+    require_positive_momentum: bool = False
+
+
 @router.post("/scans/historical")
 def run_historical_scan(request: HistoricalScanRequest):
     try:
         metadata = LocalDatasetStore().get_metadata(request.dataset_id)
         return {"dataset_id": request.dataset_id, "source": metadata["source"], "content_sha256": metadata["content_sha256"], **scan_latest(LocalDatasetStore().load_clean_bars(request.dataset_id), request.minimum_rsi, request.require_positive_momentum)}
     except (DatasetValidationError, ScannerError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.post("/scans/universe/nifty50")
+def run_nifty50_universe_scan(request: UniverseScanRequest):
+    """Scan local audited coverage on one historical NSE close, never live data."""
+    try:
+        return scan_current_nifty50_universe(**request.model_dump())
+    except (DatasetValidationError, ScannerError, UniverseError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 
 
