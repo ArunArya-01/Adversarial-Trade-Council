@@ -15,6 +15,7 @@ from database.db import get_db
 from services.lab.backtesting import BacktestConfig, BacktestValidationError, run_backtest_comparison
 from services.lab.data_pipeline import DatasetValidationError, LocalDatasetStore
 from services.lab.market_data import GrowwMarketDataAdapter
+from services.lab.model_inference import ApprovedArtifactLoader
 from services.lab.paper_trading import PaperTradeSignal, PaperTradingError, create_portfolio, execute_signal, portfolio_report
 from services.lab.research import ResearchError, build_report
 from services.lab.scanner import ScannerError, scan_latest
@@ -66,6 +67,12 @@ def lab_status():
 def market_data_status():
     """Return configuration state only; this endpoint never contacts Groww."""
     return GrowwMarketDataAdapter().status().to_dict()
+
+
+@router.get("/models/status")
+def model_inference_status():
+    """Expose only fail-closed artifact availability; this endpoint never predicts."""
+    return ApprovedArtifactLoader().status().to_dict()
 
 
 class WatchlistRequest(BaseModel):

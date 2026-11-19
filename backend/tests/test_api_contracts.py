@@ -56,6 +56,11 @@ class ModuleApiContractTests(unittest.TestCase):
         self.assertIn(payload["state"], {"disabled", "credentials_missing", "configured"})
         self.assertEqual(payload["historical_candles"], "unverified")
 
+    def test_model_status_is_fail_closed_without_an_approved_artifact(self):
+        response = self.client.get("/api/lab/models/status")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["state"], "unavailable")
+
 
 if __name__ == "__main__":
     unittest.main()
