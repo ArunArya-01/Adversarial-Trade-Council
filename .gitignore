@@ -5,6 +5,7 @@
 # regenerate normalized segments/reports with the recorded transformation code.
 data/TradeMindData/normalized*/
 data/TradeMindData/stitched*/
+data/TradeMindData/quality*/
 backend/data/lab/raw/
 backend/data/lab/clean/
 backend/data/lab/features/

@@ -248,4 +248,9 @@ class LocalDatasetStore:
         path = self.clean_dir / f"{dataset_id}.jsonl"
         if not path.exists():
             raise DatasetValidationError("dataset not found")
+        metadata_path = self.metadata_dir / f"{dataset_id}.json"
+        if metadata_path.exists():
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            if metadata.get("quality_status") == "blocked":
+                raise DatasetValidationError("dataset is blocked by its historical quality audit")
         return [MarketBar(**json.loads(line)) for line in path.read_text(encoding="utf-8").splitlines() if line]

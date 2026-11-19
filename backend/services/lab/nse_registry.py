@@ -54,7 +54,7 @@ class StitchedSeries:
             "row_count": len(self.bars),
             "first_timestamp": self.bars[0]["timestamp"] if self.bars else None,
             "last_timestamp": self.bars[-1]["timestamp"] if self.bars else None,
-            "source_segments": [{"source_path": item["source_path"], "source_sha256": item["source_sha256"], "source_kind": item["source_kind"], "rows_normalized": item["rows_normalized"]} for item in self.source_manifests],
+            "source_segments": [{"source_path": item["source_path"], "source_sha256": item["source_sha256"], "source_kind": item["source_kind"], "rows_normalized": item["rows_normalized"], "source_instruments": item.get("instruments", [item.get("instrument")])} for item in self.source_manifests],
             "identical_overlaps": list(self.identical_overlaps),
             "conflicting_overlaps": list(self.conflicting_overlaps),
             "potential_calendar_gaps": list(self.potential_calendar_gaps),

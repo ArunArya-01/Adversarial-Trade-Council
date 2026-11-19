@@ -7,7 +7,7 @@ trading platform. It uses INR, documented NSE sessions, verified Indian data
 sources, explicit corporate-action handling, and provenance-preserving data
 pipelines. It is not a live brokerage product.
 
-## Completed foundation (Phases 1–16)
+## Completed foundation (Phases 1–17)
 
 - Separate Academy and Investment Lab modules.
 - Validated single-file historical CSV import, feature generation, provenance,
@@ -24,6 +24,10 @@ pipelines. It is not a live brokerage product.
   and bulk-imported with zero conflicting overlaps; 1,298 identical overlap
   records and 98 potential calendar gaps are preserved for the Phase 17
   quality audit. Four observed ticker transitions are split rather than merged.
+- Phase 17 quality audit: all 55 series audited against NIFTY 50 Price Return;
+  no structural blockers found. Large-return/volume, gap, and ticker-transition
+  candidates are preserved as warnings, and blocked datasets are refused by
+  downstream historical loaders.
 
 ## Pending original roadmap — preserve order
 
@@ -31,7 +35,7 @@ pipelines. It is not a live brokerage product.
 | --- | --- | --- |
 | 15 | Raw NSE data normalization | **Complete.** Convert preserved raw downloads reproducibly; normalize dates/numbers/schema, retain hashes and rejects. |
 | 16 | Dataset stitching and registry | **Complete.** Merge yearly segments, flag overlap/gaps, bulk-import canonical series with lineage. |
-| 17 | Historical data quality audit | Report sessions, duplicates, OHLC errors, anomalies, corporate actions, and benchmark alignment. |
+| 17 | Historical data quality audit | **Complete.** Report sessions, duplicates, OHLC errors, anomalies, corporate actions, and benchmark alignment. |
 | 18 | Multi-asset historical universe | NIFTY 50 universe and historical multi-stock scanner; all output has a shared as-of timestamp. |
 | 19 | Complete Colab preparation | Build validated features/labels and prepared-data manifest from normalized data. |
 | 20 | Baseline ML experiment | Purged chronological splits; dummy/logistic baselines; sealed test set; recorded calibration/metrics. |
