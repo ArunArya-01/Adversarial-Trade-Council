@@ -1,0 +1,10 @@
+# Local OS metadata
+.DS_Store
+
+# Reproducible generated research artifacts; preserve source downloads and
+# regenerate normalized segments/reports with the recorded transformation code.
+data/TradeMindData/normalized*/
+backend/data/lab/raw/
+backend/data/lab/clean/
+backend/data/lab/features/
+backend/data/lab/metadata/

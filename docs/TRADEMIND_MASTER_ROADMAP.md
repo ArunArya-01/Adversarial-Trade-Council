@@ -1,0 +1,122 @@
+# TradeMind AI master roadmap
+
+## Product boundary
+
+TradeMind is an India-focused NSE/NIFTY 50 investment-research and paper
+trading platform. It uses INR, documented NSE sessions, verified Indian data
+sources, explicit corporate-action handling, and provenance-preserving data
+pipelines. It is not a live brokerage product.
+
+## Completed foundation (Phases 1–15)
+
+- Separate Academy and Investment Lab modules.
+- Validated single-file historical CSV import, feature generation, provenance,
+  historical backtesting, paper portfolios and deterministic risk safeguards.
+- Colab-first ML contracts, artifact-manifest validation, and evidence-bound
+  research reports; **no trained/approved model exists**.
+- Disabled-by-default, read-only Groww adapter boundary; no credentials or
+  broker orders.
+- Historical scanner, watchlists, Lab dashboard workflows, and exports.
+- Phase 15 raw NSE normalizer: 119 supported raw daily segments transformed
+  into separate canonical JSONL segments/manifests; 11 unsupported NIFTY Total
+  Return/constituent-list files are explicitly reported for later policy work.
+
+## Pending original roadmap — preserve order
+
+| Phase | Scope | Dependency / acceptance summary |
+| --- | --- | --- |
+| 15 | Raw NSE data normalization | **Complete.** Convert preserved raw downloads reproducibly; normalize dates/numbers/schema, retain hashes and rejects. |
+| 16 | Dataset stitching and registry | Merge yearly segments, flag overlap/gaps, bulk-import canonical series with lineage. |
+| 17 | Historical data quality audit | Report sessions, duplicates, OHLC errors, anomalies, corporate actions, and benchmark alignment. |
+| 18 | Multi-asset historical universe | NIFTY 50 universe and historical multi-stock scanner; all output has a shared as-of timestamp. |
+| 19 | Complete Colab preparation | Build validated features/labels and prepared-data manifest from normalized data. |
+| 20 | Baseline ML experiment | Purged chronological splits; dummy/logistic baselines; sealed test set; recorded calibration/metrics. |
+| 21 | Walk-forward ML evaluation | Multi-fold chronological evaluation, baseline comparisons, costs, and Trade Time Machine first implementation. |
+| 22 | Artifact approval/export | Reviewed bundle, data hashes, lockfile, parity test, and explicit approval state. |
+| 23 | FastAPI inference integration | Server-side validated artifact load; unavailable state without approved artifact. |
+| 24 | Model governance | Versioning, drift checks, audit logs, approval and rollback. |
+| 25 | Paper-trading strategy integration | Evidence-backed entry/exit plans, position sizing and deterministic risk decision before simulated fills. |
+| 26 | Portfolio/risk analytics | Exposure, concentration, drawdown, scenarios, attribution, risk sizing, and Trade Time Machine extensions. |
+| 27 | Research dashboard completion | Universe scanner, data-quality, backtest/walk-forward, risk, artifact and provenance views. |
+| 28 | Groww read-only enablement | Only after verified entitlement/credentials; freshness/rate limits; no orders. |
+| 29 | Production hardening | Auth, ownership, migrations, secrets, audit/monitoring, CI and deployment review. |
+
+## Incorporated capabilities and dependencies
+
+### Trade Time Machine (Phases 21 and 26)
+
+An India-focused research simulation engine, not a predictor.
+
+**Initial daily-data scope:**
+
+- Historical strategy/setup replay on normalized NSE equities.
+- Seeded Monte Carlo paths using historical volatility and market-regime-aware
+  sampling; sample only from information available before the simulated entry.
+- Entry, target, stop, costs, slippage, target-hit/stop-hit/neither-hit,
+  expected-return, reward/risk, drawdown, and downside-risk reporting.
+- Compare simulated distributions with actual historical setup outcomes.
+- Save immutable configuration, seed, dataset/artifact versions, assumptions,
+  output metrics and limitations.
+- Validate with walk-forward and out-of-sample periods.
+
+**Deferred intraday extension:** use verified Indian intraday candles, an NSE
+calendar/session model, explicit opening/closing auction rules, and observed
+liquidity. Do not synthesize intraday bars from daily data.
+
+**Acceptance criteria:** repeatable same-seed result; transparent assumptions;
+cost/slippage included; actual-versus-simulated comparison; no statement that a
+simulated frequency guarantees a future probability.
+
+### Entry, exit, sizing and risk (Phases 25 and 26)
+
+- A plan must identify historical/simulated source, entry condition, stop,
+  target, time exit, invalidation, costs and gap-risk limitation.
+- Position sizing uses configured INR capital, maximum loss, entry/stop
+  distance, fees/slippage and portfolio exposure limits.
+- Risk evaluates deterministic PASS/BLOCK reasons for data freshness, maximum
+  loss, concentration, daily/portfolio drawdown and exposure.
+- Plans can create paper-trade proposals only after all checks pass; they never
+  create broker orders.
+
+### Optional future enhancements
+
+- Source-cited Indian news/event research and verified fundamentals.
+- Price alerts only after Phase 27 and verified live data; alerts are not trade
+  instructions.
+- No US Congress-trade tracker and no broker executor.
+
+## Future MCP compatibility
+
+Keep Python service contracts independent of FastAPI/MCP transport. Once their
+underlying services are tested, potential wrappers are:
+
+`get_stock_history`, `scan_market`, `run_backtest`, `simulate_trade`,
+`calculate_position_size`, `analyze_portfolio_risk`, and
+`get_model_evaluation`.
+
+MCP is deferred. Each tool must call an existing validated service, return
+structured provenance/freshness/limitations, and must not expose live orders.
+
+## Planned candle evidence and algorithmic research
+
+- **Candle snapshots:** Phase 27 will render/export timestamped candlestick
+  images from validated historical data for Academy explanations and Lab proof.
+  Every image will identify its instrument, date range, frequency, source and
+  whether it is historical/simulated; it will not fabricate future candles.
+- **Algorithmic trading:** Phases 21 and 25 will support deterministic,
+  versioned strategy rules in backtests and paper-trading proposals. Algorithms
+  remain research/simulation tools until a separately approved final project;
+  this roadmap contains no live or automatic order execution.
+
+## Phase 15 proposed implementation gate
+
+Before starting Phase 15, review and approve this design:
+
+1. Raw files stay in `data/TradeMindData/originals/` and are never overwritten.
+2. Normalized outputs and quality reports are separately versioned.
+3. Initial benchmark policy is documented explicitly (NIFTY 50 Price Return
+   unless a later corporate-action/total-return policy is approved).
+4. Every transformation records source hash, parser version, reject reason and
+   output hash.
+5. Tests cover NSE dates, Indian numeric separators, descending exports,
+   duplicate overlap, malformed rows and reproducibility.
