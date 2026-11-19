@@ -14,10 +14,14 @@ execute no earlier than the next executable bar.
 
 ## Colab workflow
 
-1. Copy a licensed historical dataset and its Phase 2 provenance metadata into
-   your approved Colab/Drive location. Do not commit it here.
-2. Open notebooks in numeric order and set `DATASET_PATH` and
-   `BENCHMARK_PATH` to those approved locations.
+1. Locally prepare only Phase 17-audited NSE data, then upload the resulting
+   `prepared.csv` and `prepared-manifest.json` to your approved Colab/Drive
+   location. Do not commit either file here:
+
+   `PYTHONPATH=ml:backend backend/venv/bin/python ml/scripts/prepare_nse_research_data.py --output ml/data/phase19`
+
+2. Verify the prepared-file SHA-256 and every input dataset hash in the
+   manifest, then open notebooks in numeric order using the prepared files.
 3. Record the dataset SHA-256, date range, feature schema, package versions,
    random seed, split boundaries, and results in the run manifest.
 4. Evaluate baselines before more complex models. Do not export a model unless

@@ -32,7 +32,12 @@ def build_features(frame, benchmark_frame=None):
     delta = output["close"].diff()
     average_gain = delta.clip(lower=0).rolling(14, min_periods=14).mean()
     average_loss = (-delta.clip(upper=0)).rolling(14, min_periods=14).mean()
-    output["rsi_14"] = 100 - 100 / (1 + average_gain / average_loss.replace(0, np.nan))
+    relative_strength = average_gain / average_loss.replace(0, np.nan)
+    output["rsi_14"] = 100 - 100 / (1 + relative_strength)
+    # A zero-loss window with positive gains is a valid RSI=100 observation,
+    # not missing data. A completely flat window is conventionally neutral.
+    output.loc[(average_loss == 0) & (average_gain > 0), "rsi_14"] = 100.0
+    output.loc[(average_loss == 0) & (average_gain == 0), "rsi_14"] = 50.0
     ema_fast, ema_slow = output["close"].ewm(span=12, adjust=False, min_periods=12).mean(), output["close"].ewm(span=26, adjust=False, min_periods=26).mean()
     output["macd_12_26"] = ema_fast - ema_slow
     output["rolling_volatility_20"] = output["return_1"].rolling(20, min_periods=20).std(ddof=0)
